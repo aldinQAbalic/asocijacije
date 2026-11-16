@@ -295,6 +295,7 @@ export class Room extends DurableObject {
     const round = g.round, seq = g.seq;
     await this.ctx.storage.put('room', this.data);
     const q = G.imageQuery(g);
+    if (!q) return;   // slike samo za igrače i trenere; ostali pojmovi imaju emoji
     const { image, status } = await findImage(q);
     console.log(`slika [${q}]: ${status}`);   // vidi se u "npx wrangler tail"
     const now = this.data && this.data.game;

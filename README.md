@@ -63,13 +63,13 @@ igra nasumično uzima iz svih asocijacija (39 lakih + 37 srednjih). Oznake su tu
 
 ## Slika pojma
 
-Kad se otkrije konačno rješenje, soba na Wikimedia Commons potraži slobodne fotografije za pojam (polje `W` u asocijaciji,
-npr. `W: 'Lionel Messi'`), izabere nasumičnu i pošalje svima isti link. Ništa se ne čuva u projektu.
-Ispod slike piše autor, licenca i link na Commons. Grbovi, zastave, potpisi i slične slike se preskaču;
-za klubove `W` je njihov stadion. Server čeka najviše 8 s.
+Fotografija se prikazuje samo kad je konačno rješenje igrač ili trener (asocijacije koje imaju polje `W`,
+npr. `W: 'Lionel Messi'`). Svi ostali pojmovi (klubovi, stadioni, reprezentacije…) imaju samo emoji iz polja `E`.
+Kad se otkrije konačno rješenje, soba na Wikimedia Commons potraži slobodne fotografije, izabere nasumičnu i pošalje
+svima isti link. Ništa se ne čuva u projektu. Ispod slike piše autor, licenca i link na Commons. Server čeka najviše 8 s.
 
 Ako server ne dobije sliku, browser svakog igrača pokuša sam (tada igrači mogu vidjeti različite slike).
-Ako ni to ne uspije, prikaže se emoji iz polja `E` i ispod sitno piše razlog, npr. „server: http 403 · browser: ok“.
+Ako ni to ne uspije, prikaže se emoji iz polja `E`.
 
 Zašto server nije dobio sliku vidi se uživo dok igraš:
 

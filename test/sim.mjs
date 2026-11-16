@@ -153,7 +153,8 @@ for (let n = 0; n < 3000; n++) {
 console.log(`3000 partija OK · rundi: ${rounds} · konačno pogođeno: ${finals} · otkriveno: ${reveals} · najviše poteza u partiji: ${maxActions}`);
 
 // ---------- slike (Wikimedia Commons), sa lažnim odgovorima ----------
-for (const p of PUZZLES) assert.ok(p.W && p.E, `asocijacija ${G.label(p.F)}: fali W (pretraga slike) ili E (emoji)`);
+for (const p of PUZZLES) assert.ok(p.E, `asocijacija ${G.label(p.F)}: fali E (emoji)`);
+assert.ok(PUZZLES.filter(p => p.W).length >= 20, 'igrači i treneri imaju W (fotografija)');
 const img = (title, extra = {}) => ({ title, index: 1, imageinfo: [{ thumburl: 'https://upload.wikimedia.org/x/640px-a.jpg', descriptionurl: 'https://commons.wikimedia.org/wiki/File:a.jpg', mime: 'image/jpeg', width: 2000, height: 1500, extmetadata: { Artist: { value: '<a href="x">Ivo <b>Ivić</b></a>' }, LicenseShortName: { value: 'CC BY-SA 4.0' } }, ...extra }] });
 const resp = { query: { pages: [img('File:Club logo.png'), img('File:Messi signature.jpg'), img('File:Small.jpg', { width: 100 }), img('File:Video.webm', { mime: 'video/webm' }), img('File:Messi 2018.jpg')] } };
 const chosen = pickImage(resp);
@@ -183,7 +184,7 @@ assert.ok(pickImage({ query: { pages: [img('File:Mapei Stadium 2019.jpg')] } }),
   const gg = G.newGame([{}, {}, null, null], { rounds: 1 });
   assert.equal(G.publicView(gg).emoji, null); assert.equal(G.publicView(gg).image, null);
   G.open(gg, 'A', 0); G.guess(gg, 'F', G.label(PUZZLES[gg.order[0]].F));
-  assert.equal(G.publicView(gg).emoji, PUZZLES[gg.order[0]].E); assert.equal(G.imageQuery(gg), PUZZLES[gg.order[0]].W);
+  assert.equal(G.publicView(gg).emoji, PUZZLES[gg.order[0]].E); assert.equal(G.imageQuery(gg), PUZZLES[gg.order[0]].W || null);
 }
 console.log('slike OK');
 
