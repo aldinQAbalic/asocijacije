@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Asocijacije</title>
+<meta name="description" content="Online Asocijacije s prijateljima">
+<meta name="theme-color" content="#0a1633">
+<link rel="icon" href="/icon-192.png" type="image/png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Asocijacije">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a1633; --bg2:#10224d; --bg3:#0d1c40; --card:#16306b; --field:#1d4597; --fieldHi:#2a5bc0;
+  --gold:#f2c14e; --ink:#eef3ff; --muted:#93a5cf; --line:#ffffff1c; --ok:#3ddc97; --bad:#ff5c6c;
+  --c0:#ff5c6c; --c1:#4ea3ff; --c2:#ffb224; --c3:#3ddc97;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background-color:var(--bg);background-image:radial-gradient(circle at 50% -10%,#1b3a80 0%,var(--bg) 60%);background-attachment:fixed;background-repeat:no-repeat;color:var(--ink);font-family:Rubik,system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:default;opacity:.45}
+input,select{font-family:inherit}
+.hidden{display:none!important}
+.wrap{max-width:900px;margin:0 auto;padding:14px 12px 40px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:20px}
+.btn{background:#ffffff16;color:var(--ink);border:0;border-radius:11px;padding:11px 16px;font-weight:700;font-size:15px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--gold);color:#1a1300}
+.btn.ghost{background:transparent;border:1px solid #ffffff2a;color:var(--muted)}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:9px}
+.btn.wide{width:100%}
+.inp,#home input{width:100%;background:var(--bg);border:1px solid #ffffff2a;color:var(--ink);border-radius:11px;padding:12px;font-size:16px}
+.inp:focus,#home input:focus{outline:2px solid var(--gold);border-color:transparent}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+.row{display:flex;gap:8px;align-items:center}
+.err{color:#ffb4b4;font-size:14px;min-height:20px;margin-top:8px}
+/* ---------- početna ---------- */
+#home .card{max-width:480px;margin:10px auto}
+.logo{display:grid;grid-template-columns:repeat(4,38px);gap:6px;justify-content:center;margin:2px 0 10px}
+.logo i{height:38px;border-radius:9px;background:var(--field);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800}
+.logo i:last-child{background:var(--gold);color:#1a1300}
+h1{text-align:center;margin:0;font-size:30px;font-weight:800;letter-spacing:.06em;color:var(--gold)}
+.sub{text-align:center;color:var(--muted);margin:6px 0 4px}
+#create{margin-top:14px}
+.or{text-align:center;color:var(--muted);font-size:13px;margin:16px 0 8px}
+#codeIn{text-transform:uppercase;letter-spacing:.3em;font-weight:700;text-align:center}
+.rooms{margin-top:18px}
+.rooms h3{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:8px;margin:0 0 8px;font-weight:600}
+.rooms h3 i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px #3ddc9733}
+.roomrow{display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:12px;padding:9px 10px;margin-bottom:6px}
+.roomrow .nm{flex:1;font-weight:600;font-size:14px}
+.roomrow small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.slots{display:flex;gap:3px}
+.slots b{width:9px;height:9px;border-radius:50%;background:#ffffff25}
+.slots b.f{background:var(--gold)}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:8px}
+details.rules{margin-top:16px;color:var(--muted);font-size:14px;line-height:1.55}
+details.rules summary{cursor:pointer;color:var(--ink);font-weight:600}
+.install{margin-top:14px;display:flex;gap:10px;align-items:center;background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}
+.install img{width:36px;height:36px;border-radius:9px}
+.install div{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:#ffffff12;border:1px solid #ffffff22;color:var(--ink);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:600}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#1a1300}
+.chip small{opacity:.65;font-weight:500;margin-left:3px}
+/* ---------- soba ---------- */
+header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+header .title{font-weight:800;color:var(--gold);letter-spacing:.08em;font-size:18px;flex:1}
+header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-radius:8px;padding:6px 9px;font-size:14px}
+.iconbtn{background:#ffffff14;border:0;color:var(--ink);border-radius:9px;padding:7px 10px;font-weight:600;font-size:14px}
+.panel{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.panel h3{margin:0 0 10px;font-size:15px;color:var(--gold)}
+.seats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.seat{background:var(--bg3);border:2px solid #ffffff12;border-radius:12px;padding:10px;display:flex;align-items:center;gap:8px;min-height:58px}
+.seat .who{flex:1;min-width:0}
+.seat .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .lbl{font-size:12px;color:var(--muted)}
+.seat .acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;flex:none}
+.off{opacity:.5}
+.opts{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px;font-size:14px;color:var(--muted)}
+.opts select{background:var(--bg);color:var(--ink);border:1px solid #ffffff2a;border-radius:8px;padding:6px 8px;font-size:15px}
+.opts label{margin:0;display:flex;gap:6px;align-items:center}
+.hint{color:var(--muted);font-size:13px;margin:10px 0 0}
+#start{margin-top:12px}
+/* igrači */
+.players{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.pl{background:var(--bg2);border-radius:12px;padding:8px 10px;border:2px solid transparent;position:relative;min-width:0;transition:border-color .2s}
+.pl.turn{border-color:var(--gold);box-shadow:0 0 0 3px #f2c14e30}
+.pl .n{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .s{font-size:22px;font-weight:800}
+.pl .you{position:absolute;top:6px;right:8px;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.pl .plus{position:absolute;right:8px;bottom:6px;font-weight:800;color:var(--ok);opacity:0;transform:translateY(6px);transition:.3s}
+.pl .plus.on{opacity:1;transform:none}
+.timer{height:5px;border-radius:3px;background:#ffffff12;overflow:hidden;margin-bottom:8px}
+.timer i{display:block;height:100%;width:0;background:var(--gold);border-radius:3px}
+.timer.low i{background:var(--bad)}
+.status{text-align:center;font-size:15px;margin:2px 0 10px;min-height:22px}
+.status b{color:var(--gold)}
+/* tabla */
+.board{display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative}
+.board.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.col{background:var(--card);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.col.C,.col.D{flex-direction:column-reverse}
+.col.flash{animation:flash .9s}
+@keyframes flash{0%{box-shadow:0 0 0 0 #3ddc97cc}100%{box-shadow:0 0 0 18px #3ddc9700}}
+.fld{background:var(--field);border:0;color:var(--ink);border-radius:9px;padding:10px 6px;font-size:14px;font-weight:600;min-height:42px;text-transform:uppercase;letter-spacing:.02em;transition:background .15s,transform .12s}
+.fld.closed{color:#ffffff70;font-weight:700}
+.fld.closed.can{background:var(--fieldHi);box-shadow:inset 0 0 0 2px var(--gold)}
+.fld.closed.can:hover{transform:scale(1.03)}
+.fld.open{background:#f4f7ff;color:#0a1633}
+.fld.flip{animation:flip .5s}
+@keyframes flip{0%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.sol{border:2px dashed #ffffff40;background:transparent;color:var(--muted);border-radius:10px;padding:10px 6px;font-weight:800;font-size:15px;min-height:46px;position:relative;text-transform:uppercase}
+.sol .pts{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--gold);font-weight:700}
+.sol.can{border-color:var(--gold);color:var(--ink)}
+.sol.sel{background:#f2c14e2e;border-style:solid}
+.sol.done{border-style:solid;color:#0a1633}
+.final{grid-column:1/-1;display:flex;justify-content:center}
+.final .sol{width:min(100%,440px);font-size:20px;min-height:58px;border-radius:14px}
+/* pogađanje */
+#guess{margin-top:12px}
+.targets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tg{background:#ffffff14;color:var(--ink);border:0;border-radius:8px;padding:8px 12px;font-weight:700}
+.tg.sel{background:var(--gold);color:#1a1300}
+#guessInp{flex:1;min-width:0}
+#roundBox{text-align:center}
+.big{font-size:28px;font-weight:800;color:var(--gold);margin:4px 0;text-transform:uppercase}
+.standing{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #ffffff12;font-weight:600}
+.log{font-size:13px;color:var(--muted);line-height:1.75;margin-top:12px}
+.log div:first-child{color:var(--ink)}
+.reactbar{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.rpick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.rpick button{background:#ffffff12;border:0;border-radius:9px;padding:8px 4px;font-size:18px;color:var(--ink)}
+.rpick button.txt{font-size:12px;grid-column:span 5}
+/* popup i reakcije */
+#pop{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%) scale(.7);background:#0a1633f0;border:2px solid var(--gold);border-radius:18px;padding:16px 24px;text-align:center;opacity:0;pointer-events:none;transition:.25s;z-index:20;min-width:200px;max-width:90vw}
+#pop.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#pop .e{font-size:34px;display:block}
+#pop b{display:block;font-size:22px;text-transform:uppercase;margin-top:4px}
+#pop small{display:block;color:var(--muted);margin-top:4px;font-size:14px}
+#floats{position:fixed;inset:0;pointer-events:none;z-index:15}
+.float{position:absolute;bottom:90px;font-size:34px;text-align:center;animation:up 2s ease-out forwards;transform:translateX(-50%)}
+.float.say{font-size:16px;font-weight:700;background:#0a1633ee;border:1px solid var(--line);border-radius:12px;padding:6px 10px}
+.float small{display:block;font-size:11px;color:var(--muted)}
+@keyframes up{0%{opacity:0;transform:translate(-50%,20px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-160px)}}
+.invite{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:30;padding:16px}
+.invite .card{max-width:400px;width:100%}
+.invite h2{margin:0 0 6px;color:var(--gold)}
+.invite .bigcode{font-size:38px;font-weight:800;letter-spacing:.25em;text-align:center;color:var(--gold);margin:12px 0}
+.invite .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.btn.wa{background:#25d366;color:#04230f}.btn.vb{background:#7360f2}
+.banner{position:fixed;top:0;left:0;right:0;background:#b4232f;color:#fff;text-align:center;padding:8px;font-size:14px;z-index:40}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000d;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;transition:opacity .3s;z-index:50;max-width:90vw;text-align:center}
+@media (max-width:560px){
+  .players{grid-template-columns:repeat(2,1fr)}
+  .fld{font-size:12px;padding:9px 3px;min-height:38px}
+  .sol{font-size:13px}
+  .board{gap:8px}
+  .col{padding:7px}
+  header .title .long{display:none}
+}
+@media (min-width:561px){header .title .short{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ========== POČETNA ========== -->
+<section id="home" class="wrap">
+  <div class="card">
+    <div class="logo"><i>A</i><i>B</i><i>C</i><i>?</i></div>
+    <h1>ASOCIJACIJE</h1>
+    <p class="sub">Napravi sobu i pošalji link ekipi</p>
+    <label for="name">Tvoje ime</label>
+    <input id="name" maxlength="16" placeholder="npr. Aldin" autocomplete="nickname">
+    <label>Teme asocijacija</label>
+    <div class="chips" id="homeThemes"><span class="empty" style="padding:4px 0">Učitavam teme…</span></div>
+    <button class="btn primary wide" id="create">Napravi novu sobu</button>
+    <div class="or">ili uđi u postojeću</div>
+    <div class="row">
+      <input id="codeIn" maxlength="5" placeholder="KOD" autocomplete="off" autocapitalize="characters">
+      <button class="btn" id="join">Uđi</button>
+    </div>
+    <div class="err" id="homeErr"></div>
+    <div class="rooms">
+      <h3><i title="uživo"></i><span>Otvorene sobe</span></h3>
+      <div id="roomList"><div class="empty">Učitavam…</div></div>
+    </div>
+    <details class="rules">
+      <summary>Pravila</summary>
+      <p>Na potezu otvoriš jedno polje, pa pogađaš rješenje neke kolone ili konačno rješenje, ili kažeš <b>Dalje</b>.
+      Kad pogodiš, pogađaš dalje. Kad promašiš, potez ide sljedećem.</p>
+      <p><b>Kolona:</b> 2 boda + 1 za svako neotvoreno polje u njoj.<br>
+      <b>Konačno:</b> 7 bodova + bodovi svih neriješenih kolona.</p>
+      <p>Kvačice (č, ć, š, ž, đ) i velika slova se ne gledaju, a kod dužih riječi prolazi i jedna greška u kucanju.
+      Kad su sva polja otvorena i niko ne zna, igrač na potezu može otkriti rješenje.</p>
+    </details>
+    <div class="install hidden" id="install">
+      <img src="/icon-192.png" alt="">
+      <div id="installText"><b>Instaliraj na mobitel</b><br><span style="color:var(--muted)">Ikona na početnom ekranu, preko cijelog ekrana</span></div>
+      <button class="btn primary" id="installBtn">Instaliraj</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SOBA ========== -->
+<section id="room" class="wrap hidden">
+  <header>
+    <div class="title"><span class="long">ASOCIJACIJE</span><span class="short">A·B·C</span></div>
+    <span class="code" id="codeShow">-----</span>
+    <button class="iconbtn" id="mute" title="Zvuk">🔊</button>
+    <button class="iconbtn" id="share">Pozovi</button>
+    <button class="iconbtn" id="leave">Izađi</button>
+  </header>
+
+  <!-- predvorje: mjesta i postavke -->
+  <div id="lobbyBox">
+    <div class="panel hidden" id="results"></div>
+    <div class="panel">
+      <h3>Mjesta za stolom</h3>
+      <div class="seats" id="seats"></div>
+      <div id="themeBox" style="margin-top:12px"></div>
+      <div class="opts" id="opts"></div>
+      <button class="btn primary wide hidden" id="start">Počni igru</button>
+      <p class="hint" id="lobbyHint"></p>
+    </div>
+  </div>
+
+  <!-- igra -->
+  <div id="gameBox" class="hidden">
+    <div class="players" id="players"></div>
+    <div class="timer" id="timer"><i id="timerBar"></i></div>
+    <div class="status" id="status"></div>
+    <div class="board" id="board"></div>
+    <div class="panel hidden" id="guess">
+      <div class="targets" id="targets"></div>
+      <div class="row">
+        <input id="guessInp" class="inp" placeholder="Upiši rješenje…" autocomplete="off" maxlength="30">
+        <button class="btn primary" id="btnGuess">Pogodi</button>
+        <button class="btn" id="btnPass">Dalje</button>
+      </div>
+      <button class="btn ghost sm hidden" id="btnReveal" style="margin-top:8px">Niko ne zna — otkrij rješenje</button>
+    </div>
+    <div class="panel hidden" id="roundBox"></div>
+    <div class="reactbar">
+      <button class="btn sm" id="reactBtn">😀 Reakcija</button>
+      <span class="hint" id="watching" style="margin:0"></span>
+    </div>
+    <div class="rpick hidden" id="rpick"></div>
+    <div class="log" id="log"></div>
+  </div>
+</section>
+
+<div class="invite hidden" id="invite" role="dialog" aria-label="Pozovi prijatelje">
+  <div class="card">
+    <h2>Pozovi ekipu</h2>
+    <p class="sub" style="text-align:left;margin:0">Pošalji link. Ko ga otvori, upiše ime i odmah je u sobi.</p>
+    <div class="bigcode" id="invCode">-----</div>
+    <input id="invUrl" class="inp" readonly>
+    <div class="grid">
+      <button class="btn primary" id="invCopy">📋 Kopiraj link</button>
+      <a class="btn wa" id="invWa" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn vb" id="invVb">Viber</a>
+      <button class="btn hidden" id="invShare">📤 Podijeli…</button>
+    </div>
+    <button class="btn wide" id="invClose" style="margin-top:12px">Zatvori</button>
+  </div>
+</div>
+<div id="pop"><span class="e" id="popE"></span><b id="popT"></b><small id="popS"></small></div>
+<div id="floats"></div>
+<div class="banner hidden" id="banner">Veza je pukla, ponovo se spajam…</div>
+<div class="toast hidden" id="toast"></div>
+
+<script>
+'use strict';
+const COLS = ['A', 'B', 'C', 'D'];
+const COLORS = ['#ff5c6c', '#4ea3ff', '#ffb224', '#3ddc97'];
+const REACTIONS = ['😂', '🤔', '👏', '🙈', '😭', '🔥', '😎', '🤯', '😱', '🥳', '💀', '🤡', 'Bravo! 👏', 'Ma znam ja to! 😤', 'Nemam pojma 🤷'];
+
+// ---------- pomoćno ----------
+const $ = id => document.getElementById(id);
+let THEME_LIST = [];   // [{id, label, count}] stiže sa /api/open
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+let PID = store.get('aso-pid');
+if (!PID) { PID = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2)); store.set('aso-pid', PID); }
+$('name').value = store.get('aso-name') || '';
+let homeThemes = [];
+try { homeThemes = JSON.parse(store.get('aso-themes') || '[]'); if (!Array.isArray(homeThemes)) homeThemes = []; } catch { homeThemes = []; }
+
+// ---------- teme ----------
+// Prazna lista = sve teme. Klik na "Sve" čisti izbor; klik na temu je uključi/isključi.
+function toggleTheme(list, id) {
+  if (id === '*') return [];
+  const all = THEME_LIST.map(t => t.id);
+  let out = list.length ? list.slice() : [];
+  out = out.includes(id) ? out.filter(x => x !== id) : out.concat(id);
+  return out.length === all.length ? [] : out;
+}
+function chipsHtml(list, attr) {
+  const all = !list.length;
+  return `<button class="chip ${all ? 'on' : ''}" ${attr}="*">🎲 Sve teme</button>` +
+    THEME_LIST.map(t => `<button class="chip ${!all && list.includes(t.id) ? 'on' : ''}" ${attr}="${t.id}">${esc(t.label)}<small>${t.count}</small></button>`).join('');
+}
+function themeNames(list, labels) {
+  if (!list || !list.length) return 'sve teme';
+  return list.map(id => (labels && labels[id]) || (THEME_LIST.find(t => t.id === id) || {}).label || id).join(', ');
+}
+function renderHomeThemes() {
+  if (!THEME_LIST.length) return;
+  homeThemes = homeThemes.filter(id => THEME_LIST.some(t => t.id === id));
+  $('homeThemes').innerHTML = chipsHtml(homeThemes, 'data-htheme');
+}
+$('homeThemes').addEventListener('click', e => {
+  const b = e.target.closest('[data-htheme]'); if (!b) return;
+  homeThemes = toggleTheme(homeThemes, b.dataset.htheme);
+  store.set('aso-themes', JSON.stringify(homeThemes));
+  renderHomeThemes();
+});
+function myName() { return $('name').value.trim().slice(0, 16) || 'Igrač'; }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.remove('hidden'); t.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.classList.add('hidden'), 300); }, 2600); }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ---------- zvuk (pravi se u browseru) ----------
+const sound = (() => {
+  let ctx = null, muted = store.get('aso-mute') === '1';
+  function ac() { if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { return null; } } return ctx; }
+  function tone(freq, dur, { type = 'sine', vol = .16, at = 0, slide = null } = {}) {
+    const c = ac(); if (!c || muted) return;
+    const t = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  return {
+    get muted() { return muted; },
+    toggle() { muted = !muted; store.set('aso-mute', muted ? '1' : '0'); },
+    unlock() { const c = ac(); if (c && c.state === 'suspended') c.resume(); },
+    open() { tone(520, .12, { type: 'triangle' }); tone(780, .1, { type: 'triangle', at: .06 }); },
+    ok() { [523, 659, 784].forEach((f, i) => tone(f, .22, { type: 'triangle', at: i * .09 })); },
+    final() { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .3, { type: 'triangle', at: i * .1, vol: .18 })); },
+    bad() { tone(220, .35, { type: 'sawtooth', vol: .1, slide: 120 }); },
+    pass() { tone(330, .1, { type: 'sine', vol: .08 }); },
+    turn() { tone(880, .08, { vol: .08 }); tone(1175, .1, { vol: .08, at: .08 }); },
+  };
+})();
+document.addEventListener('pointerdown', () => sound.unlock(), { once: false, passive: true });
+function renderMute() { $('mute').textContent = sound.muted ? '🔇' : '🔊'; }
+renderMute();
+$('mute').addEventListener('click', () => { sound.toggle(); renderMute(); });
+
+// ---------- veza sa sobom ----------
+let code = null, S = null, shownSeq = -1, target = null, clockOffset = 0, dueStart = 0, lastDue = null;
+let ws = null, retry = 0, wantOpen = false;
+
+function routeCode() {
+  const m = location.pathname.match(/^\/([A-Za-z0-9]{5})$/);
+  return m ? m[1].toUpperCase() : null;
+}
+
+async function enterRoom(c) {
+  let r;
+  try { r = await fetch('/api/rooms/' + encodeURIComponent(c)); }
+  catch { showHome('Nema interneta, pokušaj ponovo'); return; }
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    showHome(j.error || 'Soba ne postoji');
+    return;
+  }
+  code = c;
+  store.set('aso-name', myName());
+  if (location.pathname !== '/' + c) history.pushState({}, '', '/' + c);
+  $('home').classList.add('hidden');
+  $('room').classList.remove('hidden');
+  $('codeShow').textContent = c;
+  S = null; shownSeq = -1; target = null;
+  connect();
+}
+
+function showHome(err) {
+  wantOpen = false;
+  if (ws) { try { ws.close(); } catch {} ws = null; }
+  code = null; S = null;
+  if (location.pathname !== '/') history.pushState({}, '', '/');
+  $('room').classList.add('hidden');
+  $('home').classList.remove('hidden');
+  $('banner').classList.add('hidden');
+  $('homeErr').textContent = err || '';
+  document.title = 'Asocijacije';
+  loadRooms();
+}
+
+function connect() {
+  wantOpen = true;
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const sock = new WebSocket(`${proto}//${location.host}/ws/${code}`);
+  ws = sock;
+  sock.onopen = () => {
+    retry = 0;
+    $('banner').classList.add('hidden');
+    send({ t: 'hello', pid: PID, name: myName() });
+  };
+  sock.onmessage = ev => {
+    let m; try { m = JSON.parse(ev.data); } catch { return; }
+    if (m.t === 'state') onState(m);
+    else if (m.t === 'error') toast(m.message);
+    else if (m.t === 'react') showReact(m);
+  };
+  sock.onclose = () => {
+    if (ws !== sock || !wantOpen) return;
+    $('banner').classList.remove('hidden');
+    const wait = Math.min(8000, 700 * 2 ** retry++);
+    setTimeout(async () => {
+      if (!wantOpen || ws !== sock) return;
+      // Ako soba više ne postoji, vrati na početnu.
+      const r = await fetch('/api/rooms/' + code).catch(() => null);
+      if (r && r.status === 404) return showHome('Soba je istekla');
+      connect();
+    }, wait);
+  };
+}
+function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && wantOpen && (!ws || ws.readyState > 1)) { retry = 0; connect(); }
+});
+
+// ---------- stanje ----------
+const seatName = (m, s) => (m.seats[s] ? m.seats[s].name : 'Igrač ' + (s + 1));
+const isLobby = m => !m.game || m.game.phase === 'over';
+function myTurn(m) { const g = m.game; return !!g && g.phase === 'play' && g.turn === m.you.seat; }
+
+function onState(m) {
+  clockOffset = m.now - Date.now();
+  if (m.due !== lastDue) { lastDue = m.due; dueStart = Date.now() + clockOffset; }
+  const prev = S;
+  S = m;
+  const g = m.game;
+  const fresh = shownSeq === -1;
+  const newLast = g && g.last && g.seq !== shownSeq ? g.last : null;
+  if (!g) shownSeq = -1;
+  render(m);
+  if (g) {
+    if (newLast && !fresh) animate(m, newLast, prev);
+    shownSeq = g.seq;
+    if (myTurn(m) && !(prev && myTurn(prev))) sound.turn();
+  }
+}
+
+function render(m) {
+  document.title = (myTurn(m) ? '🔔 ' : '') + 'Asocijacije · ' + m.code;
+  const lobby = isLobby(m);
+  $('lobbyBox').classList.toggle('hidden', !lobby);
+  $('gameBox').classList.toggle('hidden', lobby);
+  if (lobby) renderLobby(m); else renderGame(m);
+}
+
+// ---------- predvorje ----------
+function renderLobby(m) {
+  const me = m.you.seat, host = m.you.host;
+  $('seats').innerHTML = [0, 1, 2, 3].map(n => {
+    const s = m.seats[n];
+    if (s) {
+      const mine = n === me;
+      const tag = s.bot ? 'bot' : n === m.hostSeat ? 'domaćin' : (s.online ? 'tu je' : 'nije na vezi');
+      return `<div class="seat" style="border-color:${COLORS[n]}66"><span class="dot" style="background:${COLORS[n]}"></span>
+        <div class="who ${s.online ? '' : 'off'}"><div class="nm">${esc(s.name)}${mine ? ' (ti)' : ''}</div><div class="lbl">${tag}</div></div>
+        <div class="acts">${mine ? `<button class="btn ghost sm" data-stand="1">Ustani</button>` : host ? `<button class="btn ghost sm" data-clear="${n}">Ukloni</button>` : ''}</div></div>`;
+    }
+    return `<div class="seat"><span class="dot" style="background:${COLORS[n]}55"></span><div class="who"><div class="nm" style="color:var(--muted)">slobodno</div><div class="lbl">Mjesto ${n + 1}</div></div>
+      <div class="acts">${me === -1 ? `<button class="btn primary sm" data-sit="${n}">Sjedni</button>` : ''}${host ? `<button class="btn sm" data-bot="${n}">+ Bot</button>` : ''}</div></div>`;
+  }).join('');
+  const o = m.options;
+  if (m.themes && !THEME_LIST.length) THEME_LIST = Object.entries(m.themes).map(([id, label]) => ({ id, label, count: '' }));
+  $('themeBox').innerHTML = host
+    ? `<div class="hint" style="margin:0 0 6px">Teme</div><div class="chips">${chipsHtml(o.themes || [], 'data-ltheme')}</div>`
+    : `<div class="hint" style="margin:0">Teme: <b style="color:var(--ink)">${esc(themeNames(o.themes, m.themes))}</b></div>`;
+  if (host) {
+    let opts = '';
+    for (let i = 1; i <= m.maxRounds; i++) opts += `<option value="${i}" ${i === o.rounds ? 'selected' : ''}>${i}</option>`;
+    $('opts').innerHTML = `<label>Broj rundi <select id="roundsSel">${opts}</select></label>
+      <label><input type="checkbox" id="pubChk" ${o.public ? 'checked' : ''}> Javna soba (vidi se na početnoj)</label>`;
+    $('roundsSel').onchange = e => send({ t: 'opt', rounds: +e.target.value });
+    $('pubChk').onchange = e => send({ t: 'opt', public: e.target.checked });
+  } else $('opts').innerHTML = `<span>Broj rundi: <b style="color:var(--ink)">${o.rounds}</b></span>`;
+  const n = m.seats.filter(Boolean).length;
+  $('start').classList.toggle('hidden', !host);
+  $('start').disabled = n < 2;
+  $('start').textContent = m.game ? 'Nova partija' : 'Počni igru';
+  $('lobbyHint').textContent = host
+    ? (n < 2 ? 'Čekam bar još jednog igrača (ili dodaj bota).' : `Za stolom: ${n}. Kad su svi tu, klikni „${$('start').textContent}“.`)
+    : me === -1 ? 'Izaberi slobodno mjesto.' : `Čekamo da ${m.hostName ? esc(m.hostName) : 'domaćin'} pokrene igru…`;
+  // rezultati prošle partije
+  const res = $('results');
+  if (m.game && m.game.phase === 'over') { res.innerHTML = standingsHtml(m); res.classList.remove('hidden'); }
+  else res.classList.add('hidden');
+}
+
+function standingsHtml(m) {
+  const g = m.game;
+  const order = g.players.map(s => ({ s, sc: g.scores[s] })).sort((a, b) => b.sc - a.sc);
+  const top = order[0].sc, win = order.filter(o => o.sc === top);
+  return `<div style="text-align:center"><div class="big">🏆 ${win.map(w => esc(seatName(m, w.s))).join(' i ')}</div>
+    <div class="hint" style="margin:0 0 10px">${win.length > 1 ? 'Neriješeno' : 'Pobjednik'} · ${top} bodova</div></div>
+    ${order.map((o, k) => `<div class="standing"><span>${['🥇', '🥈', '🥉', '4.'][k]} <span class="dot" style="background:${COLORS[o.s]}"></span>${esc(seatName(m, o.s))}</span><span>${o.sc}</span></div>`).join('')}`;
+}
+
+// ---------- igra ----------
+function renderGame(m) {
+  const g = m.game, me = m.you.seat, mine = myTurn(m);
+  $('players').innerHTML = g.players.map(s => `<div class="pl ${g.phase === 'play' && g.turn === s ? 'turn' : ''}" id="pl${s}" style="background:linear-gradient(180deg,${COLORS[s]}26,var(--bg2))">
+      ${s === me ? '<span class="you">TI</span>' : ''}
+      <div class="n ${m.seats[s] && m.seats[s].online ? '' : 'off'}"><span class="dot" style="background:${COLORS[s]}"></span>${esc(seatName(m, s))}</div>
+      <div class="s">${g.scores[s]}</div><span class="plus" id="plus${s}"></span></div>`).join('');
+
+  // status
+  let st = '';
+  if (g.phase === 'play') {
+    const who = `<b style="color:${COLORS[g.turn]}">${esc(seatName(m, g.turn))}</b>`;
+    if (mine) st = g.stage === 'open' ? 'Tvoj potez: <b>otvori jedno polje</b>' : 'Tvoj potez: <b>pogađaj</b> ili reci dalje';
+    else st = `Na potezu: ${who} ${g.stage === 'open' ? '(otvara polje)' : '(pogađa)'}`;
+  } else if (g.phase === 'roundOver') st = `Runda ${g.round + 1} od ${g.rounds} je gotova`;
+  $('status').innerHTML = `<span class="hint" style="margin-right:8px">Runda ${g.round + 1}/${g.rounds}${g.theme ? ' · ' + esc(g.theme) : ''}</span> ${st}`;
+
+  // tabla
+  const canOpen = mine && g.stage === 'open', canGuess = mine && g.stage === 'guess';
+  if (target && (!canGuess || (target !== 'F' && g.solved[target] !== -1))) target = null;
+  const solBox = c => {
+    const solver = g.solved[c], done = solver !== -1;
+    const bg = solver >= 0 ? COLORS[solver] : '#c9d3ea';
+    const cls = ['sol', done ? 'done' : '', !done && canGuess ? 'can' : '', target === c ? 'sel' : ''].join(' ');
+    const txt = done ? esc(g.sols[c]) : (c === 'F' ? 'KONAČNO ?' : c + ' ?');
+    return `<button class="${cls}" data-target="${c}" ${done ? `style="background:${bg};border-color:${bg}"` : ''}>${txt}${!done && g.phase === 'play' ? `<span class="pts">+${g.pts[c]}</span>` : ''}</button>`;
+  };
+  let html = '';
+  for (const c of COLS) {
+    let f = '';
+    for (let i = 0; i < 4; i++) {
+      const w = g.fields[c][i], can = canOpen && w === null && g.solved[c] === -1;
+      f += `<button class="fld ${w !== null ? 'open' : 'closed'} ${can ? 'can' : ''}" id="f${c}${i}" data-open="${c}${i}" ${can ? '' : 'tabindex="-1"'}>${w !== null ? esc(w) : c + (i + 1)}</button>`;
+    }
+    html += `<div class="col ${c}" id="col${c}">${f}${solBox(c)}</div>`;
+  }
+  html += `<div class="final">${solBox('F')}</div>`;
+  $('board').innerHTML = html;
+
+  // pogađanje
+  $('guess').classList.toggle('hidden', !canGuess);
+  if (canGuess) {
+    $('targets').innerHTML = COLS.filter(c => g.solved[c] === -1).concat('F')
+      .map(c => `<button class="tg ${target === c ? 'sel' : ''}" data-target="${c}">${c === 'F' ? 'Konačno' : 'Kolona ' + c}</button>`).join('');
+    $('btnReveal').classList.toggle('hidden', !g.allOpen);
+  }
+
+  // kraj runde
+  const rb = $('roundBox');
+  if (g.phase === 'roundOver') {
+    const w = g.solved.F;
+    rb.innerHTML = `<div class="hint" style="margin:0">Konačno rješenje</div><div class="big">${esc(g.sols.F || '')}</div>
+      <div>${w >= 0 ? `Pogodio/la: <b style="color:${COLORS[w]}">${esc(seatName(m, w))}</b>` : 'Niko nije pogodio'}</div>
+      <div class="hint" id="nextIn"></div>
+      ${m.you.host ? `<button class="btn primary" data-next="1" style="margin-top:10px">${g.round + 1 >= g.rounds ? 'Konačni rezultat' : 'Sljedeća runda →'}</button>` : ''}`;
+    rb.classList.remove('hidden');
+  } else rb.classList.add('hidden');
+
+  $('watching').textContent = m.watching ? `👀 gleda: ${m.watching}` : '';
+  $('log').innerHTML = (g.log || []).map(l => `<div>${l.seat >= 0 && l.type !== 'over' ? `<span class="dot" style="background:${COLORS[l.seat]}"></span>` : ''}${esc(logText(m, l))}</div>`).join('');
+}
+
+function logText(m, l) {
+  const n = l.seat >= 0 ? seatName(m, l.seat) : '';
+  switch (l.type) {
+    case 'round': return `Runda ${l.round + 1} — počinje ${n}`;
+    case 'open': return `${n} otvara ${l.col}${l.i + 1}: ${l.word}`;
+    case 'guess':
+      if (l.ok) return l.target === 'F' ? `🎉 ${n} pogađa konačno: ${l.answer} (+${l.pts})` : `✔ ${n} pogađa ${l.target}: ${l.answer} (+${l.pts})`;
+      return `✖ ${n}: „${l.text}“ za ${l.target === 'F' ? 'konačno' : l.target}`;
+    case 'pass': return `${n}: dalje`;
+    case 'reveal': return `Niko nije pogodio — rješenje je ${l.answer}`;
+    case 'over': return 'Kraj igre!';
+  }
+  return '';
+}
+
+// ---------- animacije zadnjeg događaja ----------
+let popT;
+function popup(e, title, sub, color, ms = 1600) {
+  $('popE').textContent = e; $('popT').textContent = title; $('popS').textContent = sub || '';
+  $('pop').style.borderColor = color || 'var(--gold)';
+  $('pop').classList.add('on');
+  clearTimeout(popT); popT = setTimeout(() => $('pop').classList.remove('on'), ms);
+}
+function animate(m, l, prev) {
+  const g = m.game;
+  if (l.type === 'open') {
+    const el = $('f' + l.col + l.i); if (el) el.classList.add('flip');
+    sound.open();
+  } else if (l.type === 'guess') {
+    if (l.ok) {
+      const pl = $('plus' + l.seat); if (pl) { pl.textContent = '+' + l.pts; pl.classList.add('on'); setTimeout(() => pl.classList.remove('on'), 1800); }
+      if (l.target === 'F') { sound.final(); popup('🎉', l.answer, `${seatName(m, l.seat)} · +${l.pts}`, COLORS[l.seat], 2600); }
+      else { sound.ok(); const c = $('col' + l.target); if (c) c.classList.add('flash'); popup('✔', l.answer, `${seatName(m, l.seat)} · +${l.pts}`, COLORS[l.seat]); }
+    } else {
+      sound.bad(); $('board').classList.remove('shake'); void $('board').offsetWidth; $('board').classList.add('shake');
+      popup('✖', `„${l.text}“`, `${seatName(m, l.seat)} · netačno`, 'var(--bad)', 1300);
+    }
+  } else if (l.type === 'pass') sound.pass();
+  else if (l.type === 'reveal') popup('🤷', l.answer, 'Niko nije pogodio', '#c9d3ea', 2200);
+  else if (l.type === 'round' && l.round > 0) popup('🔤', `Runda ${l.round + 1}`, `Počinje ${seatName(m, l.seat)}`, COLORS[l.seat], 1500);
+  else if (l.type === 'over') { sound.final(); popup('🏆', 'Kraj igre', '', 'var(--gold)', 2000); }
+}
+
+// ---------- tajmer ----------
+function tick() {
+  requestAnimationFrame(tick);
+  if (!S || !S.game) return;
+  const g = S.game, now = Date.now() + clockOffset;
+  const bar = $('timerBar'), box = $('timer');
+  if (g.phase === 'play' && S.due) {
+    const total = Math.max(1, S.due - dueStart), left = Math.max(0, S.due - now);
+    bar.style.width = (left / total * 100) + '%';
+    box.classList.toggle('low', left < 8000 && total > 10000);
+  } else bar.style.width = '0';
+  const ni = $('nextIn');
+  if (ni && g.phase === 'roundOver' && S.due) {
+    const s = Math.max(0, Math.ceil((S.due - now) / 1000));
+    ni.textContent = g.round + 1 >= g.rounds ? `Konačni rezultat za ${s} s` : `Sljedeća runda za ${s} s`;
+  }
+}
+requestAnimationFrame(tick);
+
+// ---------- akcije ----------
+function doGuess() {
+  if (!S || !myTurn(S)) return;
+  const text = $('guessInp').value.trim();
+  if (!target) { toast('Izaberi šta pogađaš: kolonu ili konačno'); return; }
+  if (!text) { $('guessInp').focus(); return; }
+  send({ t: 'guess', target, text });
+  $('guessInp').value = '';
+  target = null;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b || !S) return;
+  const d = b.dataset;
+  if (d.open) { if (myTurn(S) && S.game.stage === 'open') send({ t: 'open', col: d.open[0], i: +d.open[1] }); return; }
+  if (d.target) {
+    if (!myTurn(S) || S.game.stage !== 'guess') return;
+    if (d.target !== 'F' && S.game.solved[d.target] !== -1) return;
+    target = d.target; render(S); $('guessInp').focus(); return;
+  }
+  if (d.sit) send({ t: 'sit', seat: +d.sit });
+  else if (d.stand) send({ t: 'stand' });
+  else if (d.bot) send({ t: 'bot', seat: +d.bot });
+  else if (d.clear) send({ t: 'clear', seat: +d.clear });
+  else if (d.next) send({ t: 'next' });
+  else if (d.react) { send({ t: 'react', e: d.react }); $('rpick').classList.add('hidden'); }
+  else if (d.ltheme) send({ t: 'opt', themes: toggleTheme(S.options.themes || [], d.ltheme) });
+});
+$('btnGuess').addEventListener('click', doGuess);
+$('guessInp').addEventListener('keydown', e => { if (e.key === 'Enter') doGuess(); });
+$('btnPass').addEventListener('click', () => { send({ t: 'pass' }); target = null; });
+$('btnReveal').addEventListener('click', () => send({ t: 'reveal' }));
+$('start').addEventListener('click', () => send({ t: 'start' }));
+
+// tastatura: A, B, C, D, K (konačno) biraju cilj kad pogađaš
+document.addEventListener('keydown', e => {
+  if (!S || !myTurn(S) || S.game.stage !== 'guess' || document.activeElement === $('guessInp')) return;
+  const k = e.key.toUpperCase();
+  const t = k === 'K' ? 'F' : COLS.includes(k) ? k : null;
+  if (t && (t === 'F' || S.game.solved[t] === -1)) { target = t; render(S); $('guessInp').focus(); e.preventDefault(); }
+});
+
+// reakcije
+$('rpick').innerHTML = REACTIONS.map(r => `<button class="${r.length > 3 ? 'txt' : ''}" data-react="${esc(r)}">${esc(r)}</button>`).join('');
+$('reactBtn').addEventListener('click', () => $('rpick').classList.toggle('hidden'));
+function showReact(m) {
+  const f = document.createElement('div');
+  const long = [...m.e].length > 3;
+  f.className = 'float' + (long ? ' say' : '');
+  f.style.left = (15 + Math.random() * 70) + '%';
+  f.style.color = m.seat >= 0 ? COLORS[m.seat] : '';
+  f.innerHTML = `${esc(m.e)}<small>${esc(m.name || '')}</small>`;
+  $('floats').appendChild(f);
+  setTimeout(() => f.remove(), 2100);
+}
+
+// izlazak
+let leaveArmed = 0;
+$('leave').addEventListener('click', () => {
+  const playing = S && S.game && S.game.phase !== 'over' && S.you.seat !== -1;
+  if (playing && Date.now() - leaveArmed > 3000) { leaveArmed = Date.now(); toast('Klikni Izađi ponovo: tvoje mjesto preuzima bot'); return; }
+  send({ t: 'leave' });
+  setTimeout(() => showHome(), 120);
+});
+
+// poziv
+$('share').addEventListener('click', () => {
+  const url = location.origin + '/' + code;
+  const text = `Hajde igraj Asocijacije sa mnom! 🔤 ${url}`;
+  $('invCode').textContent = code;
+  $('invUrl').value = url;
+  $('invWa').href = 'https://wa.me/?text=' + encodeURIComponent(text);
+  $('invVb').href = 'viber://forward?text=' + encodeURIComponent(text);
+  $('invShare').classList.toggle('hidden', !navigator.share);
+  $('invite').classList.remove('hidden');
+});
+$('invCopy').addEventListener('click', async () => {
+  const url = $('invUrl').value;
+  let ok = false;
+  try { await navigator.clipboard.writeText(url); ok = true; } catch {}
+  if (!ok) { try { $('invUrl').select(); ok = document.execCommand('copy'); } catch {} }
+  if (ok) { $('invCopy').textContent = '✅ Kopirano'; setTimeout(() => { $('invCopy').textContent = '📋 Kopiraj link'; }, 1800); }
+  else { $('invUrl').select(); toast('Označi link i kopiraj ga ručno'); }
+});
+$('invShare').addEventListener('click', async () => {
+  try { await navigator.share({ title: 'Asocijacije', text: 'Hajde igraj sa mnom! 🔤', url: $('invUrl').value }); } catch {}
+});
+$('invUrl').addEventListener('focus', e => e.target.select());
+$('invClose').addEventListener('click', () => $('invite').classList.add('hidden'));
+$('invite').addEventListener('click', e => { if (e.target.id === 'invite') $('invite').classList.add('hidden'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('invite').classList.add('hidden'); });
+
+// ---------- početna ----------
+$('create').addEventListener('click', async () => {
+  if (!$('name').value.trim()) { $('homeErr').textContent = 'Upiši ime'; $('name').focus(); return; }
+  $('create').disabled = true;
+  try {
+    const r = await fetch('/api/rooms', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ themes: homeThemes }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error);
+    await enterRoom(j.code);
+  } catch (e) { $('homeErr').textContent = e.message || 'Greška, pokušaj ponovo'; }
+  $('create').disabled = false;
+});
+function joinFromInput() {
+  const c = $('codeIn').value.trim().toUpperCase();
+  if (!$('name').value.trim()) { $('homeErr').textContent = 'Upiši ime'; $('name').focus(); return; }
+  if (!/^[A-Z0-9]{5}$/.test(c)) { $('homeErr').textContent = 'Kod ima 5 znakova'; return; }
+  enterRoom(c);
+}
+$('join').addEventListener('click', joinFromInput);
+$('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') joinFromInput(); });
+$('name').addEventListener('change', () => { store.set('aso-name', myName()); if (code) send({ t: 'name', name: myName() }); });
+window.addEventListener('popstate', () => { const c = routeCode(); if (c && c !== code) enterRoom(c); else if (!c && code) showHome(); });
+
+// ---------- otvorene sobe ----------
+let roomsTimer;
+async function loadRooms() {
+  clearTimeout(roomsTimer);
+  if (code || document.visibilityState !== 'visible') return;
+  try {
+    const r = await fetch('/api/open');
+    const { rooms, themes } = await r.json();
+    if (themes && themes.length) { const first = !THEME_LIST.length || THEME_LIST.some(t => t.count === ''); THEME_LIST = themes; if (first) renderHomeThemes(); }
+    const box = $('roomList');
+    box.innerHTML = '';
+    if (!rooms.length) box.innerHTML = '<div class="empty">Trenutno nema otvorenih soba. Napravi svoju!</div>';
+    for (const x of rooms) {
+      const row = document.createElement('div');
+      row.className = 'roomrow';
+      row.innerHTML = `<span class="slots">${[0, 1, 2, 3].map(i => `<b class="${i < x.players ? 'f' : ''}"></b>`).join('')}</span>
+        <span class="nm">Soba: ${esc(x.host)}<small>${x.rounds} ${x.rounds === 1 ? 'runda' : x.rounds < 5 ? 'runde' : 'rundi'} · ${esc(themeNames(x.themes))} · ${x.players}/4${x.over ? ' · između partija' : ''}</small></span>`;
+      const b = document.createElement('button');
+      b.className = 'btn'; b.textContent = 'Uđi';
+      b.addEventListener('click', () => {
+        if (!$('name').value.trim()) { $('homeErr').textContent = 'Upiši ime pa klikni Uđi'; $('name').focus(); return; }
+        enterRoom(x.code);
+      });
+      row.appendChild(b);
+      box.appendChild(row);
+    }
+  } catch {
+    $('roomList').innerHTML = '<div class="empty">Lista soba trenutno nije dostupna</div>';
+  }
+  roomsTimer = setTimeout(loadRooms, 4000);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !code) loadRooms(); });
+
+// ---------- instalacija (PWA) ----------
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+let installEvt = null;
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installEvt = e;
+  if (!standalone) $('install').classList.remove('hidden');
+});
+$('installBtn').addEventListener('click', async () => {
+  if (!installEvt) return;
+  installEvt.prompt();
+  await installEvt.userChoice.catch(() => {});
+  installEvt = null;
+  $('install').classList.add('hidden');
+});
+window.addEventListener('appinstalled', () => $('install').classList.add('hidden'));
+if (!standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) {
+  $('install').classList.remove('hidden');
+  $('installBtn').classList.add('hidden');
+  $('installText').innerHTML = '<b>Instaliraj na iPhone</b><br><span style="color:var(--muted)">U Safariju dodirni <b>Podijeli</b> ⬆️ pa <b>Dodaj na početni ekran</b></span>';
+}
+
+// Otvoren link sobe: ako ime već postoji, ulazi direktno; inače prvo pita za ime.
+(function init() {
+  const c = routeCode();
+  if (!c) { loadRooms(); return; }
+  $('codeIn').value = c;
+  if (store.get('aso-name')) enterRoom(c);
+  else { $('homeErr').textContent = 'Upiši ime i klikni Uđi'; $('name').focus(); loadRooms(); }
+})();
+</script>
+</body>
+</html>
