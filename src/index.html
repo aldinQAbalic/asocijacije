@@ -104,35 +104,36 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 .timer{height:5px;border-radius:3px;background:#ffffff12;overflow:hidden;margin-bottom:8px}
 .timer i{display:block;height:100%;width:0;background:var(--gold);border-radius:3px}
 .timer.low i{background:var(--bad)}
-.status{text-align:center;font-size:15px;margin:2px 0 10px;min-height:22px}
+.status{text-align:center;font-size:13px;color:var(--muted);margin:8px 0 4px;min-height:18px}
+#topSlot{min-height:46px;margin-bottom:8px;display:flex;flex-direction:column;justify-content:center}
+.turnmsg{text-align:center;font-size:15px}
+.turnmsg b{color:var(--gold)}
+#guess .inp{padding:10px 12px}
+#guess .btn{padding:10px 13px}
 .status b{color:var(--gold)}
 /* tabla */
-.board{display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative}
 .board.shake{animation:shake .45s}
 @keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
-.col{background:var(--card);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.col{background:var(--card);border-radius:12px;padding:7px;display:flex;flex-direction:column;gap:4px}
 .col.C,.col.D{flex-direction:column-reverse}
 .col.flash{animation:flash .9s}
 @keyframes flash{0%{box-shadow:0 0 0 0 #3ddc97cc}100%{box-shadow:0 0 0 18px #3ddc9700}}
-.fld{background:var(--field);border:0;color:var(--ink);border-radius:9px;padding:10px 6px;font-size:14px;font-weight:600;min-height:42px;text-transform:uppercase;letter-spacing:.02em;transition:background .15s,transform .12s}
+.fld{background:var(--field);border:0;color:var(--ink);border-radius:8px;padding:5px 4px;font-size:13px;font-weight:600;min-height:30px;line-height:1.15;text-transform:uppercase;letter-spacing:.02em;transition:background .15s,transform .12s}
 .fld.closed{color:#ffffff70;font-weight:700}
 .fld.closed.can{background:var(--fieldHi);box-shadow:inset 0 0 0 2px var(--gold)}
 .fld.closed.can:hover{transform:scale(1.03)}
 .fld.open{background:#f4f7ff;color:#0a1633}
 .fld.flip{animation:flip .5s}
 @keyframes flip{0%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
-.sol{border:2px dashed #ffffff40;background:transparent;color:var(--muted);border-radius:10px;padding:10px 6px;font-weight:800;font-size:15px;min-height:46px;position:relative;text-transform:uppercase}
+.sol{border:2px dashed #ffffff40;background:transparent;color:var(--muted);border-radius:9px;padding:5px 26px;font-weight:800;font-size:14px;min-height:34px;line-height:1.15;position:relative;text-transform:uppercase}
 .sol .pts{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--gold);font-weight:700}
 .sol.can{border-color:var(--gold);color:var(--ink)}
 .sol.sel{background:#f2c14e2e;border-style:solid}
 .sol.done{border-style:solid;color:#0a1633}
 .final{grid-column:1/-1;display:flex;justify-content:center}
-.final .sol{width:min(100%,440px);font-size:20px;min-height:58px;border-radius:14px}
+.final .sol{width:min(100%,440px);font-size:17px;min-height:42px;border-radius:12px}
 /* pogađanje */
-#guess{margin-top:12px}
-.targets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.tg{background:#ffffff14;color:var(--ink);border:0;border-radius:8px;padding:8px 12px;font-weight:700}
-.tg.sel{background:var(--gold);color:#1a1300}
 #guessInp{flex:1;min-width:0}
 #roundBox{text-align:center}
 .big{font-size:28px;font-weight:800;color:var(--gold);margin:4px 0;text-transform:uppercase}
@@ -173,10 +174,11 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
   .pl .dot{display:none}
   .pl{border-top:3px solid var(--pc)}
   .pl .plus{font-size:12px;right:5px;bottom:4px}
-  .fld{font-size:12px;padding:9px 3px;min-height:38px}
-  .sol{font-size:13px}
-  .board{gap:8px}
-  .col{padding:7px}
+  .fld{font-size:12px;padding:4px 3px;min-height:30px}
+  .sol{font-size:12px;padding:4px 24px}
+  .board{gap:6px}
+  .col{padding:5px}
+  #guess .btn{padding:10px 10px;font-size:14px}
   header .title .long{display:none}
 }
 @media (min-width:561px){header .title .short{display:none}}
@@ -254,17 +256,18 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
   <div id="gameBox" class="hidden">
     <div class="players" id="players"></div>
     <div class="timer" id="timer"><i id="timerBar"></i></div>
-    <div class="status" id="status"></div>
-    <div class="board" id="board"></div>
-    <div class="panel hidden" id="guess">
-      <div class="targets" id="targets"></div>
-      <div class="row">
-        <input id="guessInp" class="inp" placeholder="Upiši rješenje…" autocomplete="off" maxlength="30">
+    <!-- gore: polje za upis kad pogađaš (tastatura na telefonu ga ne pokrije), inače ko je na potezu -->
+    <div id="topSlot">
+      <div class="turnmsg" id="turnMsg"></div>
+      <div class="row hidden" id="guess">
+        <input id="guessInp" class="inp" placeholder="Klikni A ?, B ?… ili KONAČNO ?" autocomplete="off" maxlength="30">
         <button class="btn primary" id="btnGuess">Pogodi</button>
         <button class="btn" id="btnPass">Dalje</button>
       </div>
-      <button class="btn ghost sm hidden" id="btnReveal" style="margin-top:8px">Niko ne zna — otkrij rješenje</button>
     </div>
+    <div class="board" id="board"></div>
+    <div class="status" id="status"></div>
+    <div style="text-align:center"><button class="btn ghost sm hidden" id="btnReveal">Niko ne zna — otkrij rješenje</button></div>
     <div class="panel hidden" id="roundBox"></div>
     <div class="reactbar">
       <button class="btn sm" id="reactBtn">😀 Reakcija</button>
@@ -555,7 +558,8 @@ function renderGame(m) {
     if (mine) st = g.stage === 'open' ? 'Tvoj potez: <b>otvori jedno polje</b>' : 'Tvoj potez: <b>pogađaj</b> ili reci dalje';
     else st = `Na potezu: ${who} ${g.stage === 'open' ? '(otvara polje)' : '(pogađa)'}`;
   } else if (g.phase === 'roundOver') st = `Runda ${g.round + 1} od ${g.rounds} je gotova`;
-  $('status').innerHTML = `<span class="hint" style="margin-right:8px">Runda ${g.round + 1}/${g.rounds}${g.theme ? ' · ' + esc(g.theme) : ''}</span> ${st}`;
+  $('turnMsg').innerHTML = st;
+  $('status').textContent = `Runda ${g.round + 1}/${g.rounds}${g.theme ? ' · ' + g.theme : ''}`;
 
   // tabla
   const canOpen = mine && g.stage === 'open', canGuess = mine && g.stage === 'guess';
@@ -580,12 +584,11 @@ function renderGame(m) {
   $('board').innerHTML = html;
 
   // pogađanje
+  // cilj se bira klikom na A ?, B ?, C ?, D ? ili KONAČNO ? na tabli
   $('guess').classList.toggle('hidden', !canGuess);
-  if (canGuess) {
-    $('targets').innerHTML = COLS.filter(c => g.solved[c] === -1).concat('F')
-      .map(c => `<button class="tg ${target === c ? 'sel' : ''}" data-target="${c}">${c === 'F' ? 'Konačno' : 'Kolona ' + c}</button>`).join('');
-    $('btnReveal').classList.toggle('hidden', !g.allOpen);
-  }
+  $('turnMsg').classList.toggle('hidden', canGuess);
+  $('guessInp').placeholder = !target ? 'Klikni A ?, B ?… ili KONAČNO ?' : target === 'F' ? 'Konačno rješenje…' : `Rješenje za kolonu ${target}…`;
+  $('btnReveal').classList.toggle('hidden', !(canGuess && g.allOpen));
 
   // kraj runde
   const rb = $('roundBox');
@@ -668,7 +671,7 @@ requestAnimationFrame(tick);
 function doGuess() {
   if (!S || !myTurn(S)) return;
   const text = $('guessInp').value.trim();
-  if (!target) { toast('Izaberi šta pogađaš: kolonu ili konačno'); return; }
+  if (!target) { toast('Klikni na A ?, B ?, C ?, D ? ili KONAČNO ? na tabli'); return; }
   if (!text) { $('guessInp').focus(); return; }
   send({ t: 'guess', target, text });
   $('guessInp').value = '';
