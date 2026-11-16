@@ -487,9 +487,8 @@ function renderLobby(m) {
   }).join('');
   const o = m.options;
   if (m.themes && !THEME_LIST.length) THEME_LIST = Object.entries(m.themes).map(([id, label]) => ({ id, label, count: '' }));
-  $('themeBox').innerHTML = host
-    ? `<div class="hint" style="margin:0 0 6px">Teme</div><div class="chips">${chipsHtml(o.themes || [], 'data-ltheme')}</div>`
-    : `<div class="hint" style="margin:0">Teme: <b style="color:var(--ink)">${esc(themeNames(o.themes, m.themes))}</b></div>`;
+  // teme se biraju samo na početnoj stranici, u sobi se samo prikazuju
+  $('themeBox').innerHTML = `<div class="hint" style="margin:0">Teme: <b style="color:var(--ink)">${esc(themeNames(o.themes, m.themes))}</b></div>`;
   if (host) {
     let opts = '';
     for (let i = 1; i <= m.maxRounds; i++) opts += `<option value="${i}" ${i === o.rounds ? 'selected' : ''}>${i}</option>`;
@@ -670,7 +669,6 @@ document.addEventListener('click', e => {
   else if (d.clear) send({ t: 'clear', seat: +d.clear });
   else if (d.next) send({ t: 'next' });
   else if (d.react) { send({ t: 'react', e: d.react }); $('rpick').classList.add('hidden'); }
-  else if (d.ltheme) send({ t: 'opt', themes: toggleTheme(S.options.themes || [], d.ltheme) });
 });
 $('btnGuess').addEventListener('click', doGuess);
 $('guessInp').addEventListener('keydown', e => { if (e.key === 'Enter') doGuess(); });

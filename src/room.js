@@ -138,7 +138,7 @@ export class Room extends DurableObject {
       case 'opt': {
         if (!isHost) throw new Error('Samo domaćin mijenja postavke');
         if (!lobby) throw new Error('Igra je u toku');
-        if (Array.isArray(msg.themes)) setThemes(d.options, msg.themes);
+        // teme se biraju samo pri pravljenju sobe (/init), ovdje se ne mijenjaju
         if (Number.isInteger(msg.rounds)) setRounds(d.options, msg.rounds);
         if (typeof msg.public === 'boolean') d.options.public = msg.public;
         break;

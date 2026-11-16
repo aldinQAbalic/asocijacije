@@ -46,7 +46,7 @@ U drugom terminalu: `node test/online.mjs` odigra partiju od 3 runde preko mrež
 
 ## Teme
 
-Teme se biraju na početnoj stranici prije „Napravi novu sobu“ (može više njih, ili „Sve teme“), a domaćin ih može promijeniti i u sobi.
+Teme se biraju samo na početnoj stranici, prije „Napravi novu sobu“ (može više njih, ili „Sve teme“). U sobi se samo prikazuju i ne mogu se mijenjati.
 Izbor se pamti u browseru. Broj rundi je ograničen brojem asocijacija u izabranim temama.
 Trenutno: 🏠 Svakodnevica (7), 🌿 Priroda (6), ⚽ Sport (5), 🌉 Naše (5), 🎭 Kultura (5).
 
@@ -75,7 +75,7 @@ U `src/puzzles.js` dodaj novi blok:
 - **Kolona:** 2 boda + 1 za svako neotvoreno polje u toj koloni.
 - **Konačno rješenje:** 7 bodova + bodovi svih neriješenih kolona. Runda se tada završava.
 - Kad su sva polja otvorena, odmah se pogađa. Ako niko ne zna, igrač na potezu može otkriti rješenje (bez bodova).
-- Svaku rundu počinje sljedeći igrač. Domaćin bira teme, broj rundi i da li je soba javna.
+- Svaku rundu počinje sljedeći igrač. Teme se biraju pri pravljenju sobe; domaćin u sobi bira broj rundi i da li je soba javna.
 - **Vrijeme:** 25 s za otvaranje, 45 s za pogađanje (8 s ako je igrač ispao s mreže).
   Kad istekne: otvori se nasumično polje, odnosno igrač kaže dalje.
 - Između rundi je pauza od 9 s (vidi se rješenje); domaćin je može preskočiti.
