@@ -8,7 +8,7 @@ const GUESS_MS = 45_000;         // koliko ima da pogađa
 const OFFLINE_MS = 8_000;        // ako je igrač ispao s mreže, kraće se čeka
 const BOT_OPEN_MS = 1400;
 const BOT_GUESS_MS = 2300;
-const ROUND_PAUSE_MS = 9_000;    // pauza između rundi (vidi se rješenje)
+const ROUND_PAUSE_MS = 12_000;   // pauza između rundi (vidi se rješenje i slika pojma)
 const ROOM_TTL_MS = 24 * 3600_000;
 const MAX_SOCKETS = 30;
 export const REACTIONS = ['😂', '🤔', '👏', '🙈', '😭', '🔥', '😎', '🤯', '😱', '🥳', '💀', '🤡', 'Bravo! 👏', 'Ma znam ja to! 😤', 'Nemam pojma 🤷'];
@@ -294,11 +294,15 @@ export class Room extends DurableObject {
     g.imageTried = true;
     const round = g.round, seq = g.seq;
     await this.ctx.storage.put('room', this.data);
-    const img = await findImage(G.imageQuery(g));
+    const q = G.imageQuery(g);
+    const { image, status } = await findImage(q);
+    console.log(`slika [${q}]: ${status}`);   // vidi se u "npx wrangler tail"
     const now = this.data && this.data.game;
     // u međuvremenu je mogla početi nova runda ili partija
-    if (!img || now !== g || now.round !== round || now.phase !== 'roundOver' || now.seq !== seq) return;
-    now.image = img;
+    if (now !== g || now.round !== round || now.phase !== 'roundOver' || now.seq !== seq) return;
+    now.image = image;
+    now.imageStatus = status;
+    now.imageDone = true;
     await this.ctx.storage.put('room', this.data);
     this.broadcast();
   }

@@ -66,8 +66,18 @@ igra nasumično uzima iz svih asocijacija (39 lakih + 37 srednjih). Oznake su tu
 Kad se otkrije konačno rješenje, soba na Wikimedia Commons potraži slobodne fotografije za pojam (polje `W` u asocijaciji,
 npr. `W: 'Lionel Messi'`), izabere nasumičnu i pošalje svima isti link. Ništa se ne čuva u projektu.
 Ispod slike piše autor, licenca i link na Commons. Grbovi, zastave, potpisi i slične slike se preskaču;
-za klubove `W` je njihov stadion. Ako Commons ne odgovori za 4 s ili nema dobre slike, prikaže se emoji iz polja `E`.
-Lokalno (`wrangler dev`) slike rade samo ako računar ima pristup internetu.
+za klubove `W` je njihov stadion. Server čeka najviše 8 s.
+
+Ako server ne dobije sliku, browser svakog igrača pokuša sam (tada igrači mogu vidjeti različite slike).
+Ako ni to ne uspije, prikaže se emoji iz polja `E` i ispod sitno piše razlog, npr. „server: http 403 · browser: ok“.
+
+Zašto server nije dobio sliku vidi se uživo dok igraš:
+
+```
+npx wrangler tail
+```
+
+Za svaku rundu ispiše npr. `slika [Lionel Messi]: ok` ili `slika [Lionel Messi]: http 403`.
 
 ## Nove asocijacije
 
@@ -94,7 +104,7 @@ U `src/puzzles.js` dodaj novi blok:
 - Svaku rundu počinje sljedeći igrač. Teme se biraju pri pravljenju sobe; domaćin u sobi bira broj rundi (4, 8 ili 12) i da li je soba javna.
 - **Vrijeme:** 25 s za otvaranje, 45 s za pogađanje (8 s ako je igrač ispao s mreže).
   Kad istekne: otvori se nasumično polje, odnosno igrač kaže dalje.
-- Između rundi je pauza od 9 s (vidi se rješenje); domaćin je može preskočiti.
+- Između rundi je pauza od 12 s (vidi se rješenje i slika); domaćin je može preskočiti.
 - Ako igrač izađe usred partije, mjesto preuzima bot.
 - **Botovi** "znaju" rješenje kolone s vjerovatnoćom koja raste s brojem otvorenih polja (`botAction` u `src/game.js`),
   a konačno sve sigurnije što je više kolona riješeno. Ponekad i promaše.

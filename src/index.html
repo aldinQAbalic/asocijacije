@@ -603,7 +603,9 @@ function renderGame(m) {
   if (g.phase === 'roundOver') {
     const w = g.solved.F;
     // ponovo crta samo kad se nešto promijeni (da slika ne treperi)
-    const key = [g.round, g.seq, w, m.you.host, g.image && g.image.url].join('|');
+    clientImage(g);
+    const loc = localImg[roundKey(g)];
+    const key = [g.round, g.seq, w, m.you.host, g.image && g.image.url, g.imageDone, loc && loc.state, loc && loc.image && loc.image.url].join('|');
     if (rb.dataset.key !== key) {
       rb.dataset.key = key;
       rb.innerHTML = `<div class="hint" style="margin:0">Konačno rješenje</div><div class="big">${esc(g.sols.F || '')}</div>
@@ -622,10 +624,70 @@ function renderGame(m) {
   $('log').innerHTML = (g.log || []).map(l => `<div>${l.seat >= 0 && l.type !== 'over' ? `<span class="dot" style="background:${COLORS[l.seat]}"></span>` : ''}${esc(logText(m, l))}</div>`).join('');
 }
 
-// Slika pojma sa Wikimedia Commons (ili emoji dok je nema / ako je nema)
+// ---------- slika pojma ----------
+// Server traži sliku za sve igrače. Ako je ne dobije, browser pokuša sam (isti pojam, Wikimedia Commons).
+const localImg = {};   // runda -> { state: 'loading' | 'done', image, status }
+const roundKey = g => g.round + ':' + g.seq;
+const IMG_SKIP = /\b(logo|crest|badge|emblem|coat of arms|grb|flag|zastava|map|signature|autograph|icon|diagram|chart|stamp)\b/i;
+function commonsUrl(q, bitmapOnly) {
+  const p = new URLSearchParams({ action: 'query', format: 'json', formatversion: '2', origin: '*',
+    generator: 'search', gsrsearch: bitmapOnly ? q + ' filetype:bitmap' : q, gsrnamespace: '6', gsrlimit: '30',
+    prop: 'imageinfo', iiprop: 'url|mime|size|extmetadata', iiurlwidth: '640', iiextmetadatafilter: 'Artist|LicenseShortName' });
+  return 'https://commons.wikimedia.org/w/api.php?' + p;
+}
+function stripHtml(h, max) { const d = document.createElement('div'); d.innerHTML = String(h || ''); return (d.textContent || '').replace(/\s+/g, ' ').trim().slice(0, max); }
+function pickCommons(json) {
+  let pages = (json && json.query && json.query.pages) || [];
+  if (!Array.isArray(pages)) pages = Object.values(pages);
+  const ok = pages.sort((a, b) => (a.index || 0) - (b.index || 0)).filter(p => {
+    const ii = p.imageinfo && p.imageinfo[0];
+    return ii && /^https:\/\/upload\.wikimedia\.org\//.test(ii.thumburl || '') && /^image\/(jpeg|png|webp)$/.test(ii.mime || '')
+      && (ii.width || 0) >= 300 && (ii.height || 0) >= 200 && !IMG_SKIP.test((p.title || '').replace(/[_.\-]/g, ' '));
+  }).slice(0, 15);
+  if (!ok.length) return null;
+  const ii = ok[Math.floor(Math.random() * ok.length)].imageinfo[0], m = ii.extmetadata || {};
+  return { url: ii.thumburl, page: /^https:\/\/commons\.wikimedia\.org\//.test(ii.descriptionurl || '') ? ii.descriptionurl : null,
+    author: stripHtml(m.Artist && m.Artist.value, 60) || null, license: stripHtml(m.LicenseShortName && m.LicenseShortName.value, 30) || null };
+}
+async function browserFind(q) {
+  let status = 'nema rezultata';
+  for (const bitmapOnly of [true, false]) {
+    try {
+      const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(commonsUrl(q, bitmapOnly), { signal: ctrl.signal }); clearTimeout(t);
+      if (!r.ok) return { image: null, status: 'http ' + r.status };
+      const j = await r.json();
+      const pages = j && j.query && j.query.pages;
+      if (!pages || !Object.keys(pages).length) continue;
+      const image = pickCommons(j);
+      if (image) return { image, status: 'ok' };
+      status = 'nema odgovarajuće slike';
+    } catch (e) { return { image: null, status: e && e.name === 'AbortError' ? 'isteklo vrijeme' : 'greška mreže' }; }
+  }
+  return { image: null, status };
+}
+function clientImage(g) {
+  if (g.phase !== 'roundOver' || g.image || !g.imageDone || !g.imageQuery) return;
+  const k = roundKey(g);
+  if (localImg[k]) return;
+  localImg[k] = { state: 'loading' };
+  browserFind(g.imageQuery).then(r => {
+    localImg[k] = { state: 'done', ...r };
+    console.log('slika (browser):', g.imageQuery, r.status, '· server:', g.imageStatus);
+    if (S && S.game && roundKey(S.game) === k) render(S);
+  });
+}
+
+// Slika pojma (ili emoji dok je nema / ako je nema)
 function pictureHtml(g) {
-  const im = g.image;
-  if (!im) return `<div class="emo">${esc(g.emoji || '⚽')}</div>`;
+  const loc = localImg[roundKey(g)];
+  const im = g.image || (loc && loc.image);
+  if (!im) {
+    let note = '';
+    if (!g.imageDone || (loc && loc.state === 'loading')) note = 'tražim sliku…';
+    else if (loc && loc.state === 'done') note = `slika nije stigla (server: ${g.imageStatus || '?'} · browser: ${loc.status})`;
+    return `<div class="emo">${esc(g.emoji || '⚽')}</div>${note ? `<div class="hint" style="margin:-4px 0 8px;font-size:11px">${esc(note)}</div>` : ''}`;
+  }
   const credit = [im.author, im.license].filter(Boolean).map(esc).join(' · ');
   return `<figure class="pic"><img src="${esc(im.url)}" alt="${esc(g.sols.F || '')}" referrerpolicy="no-referrer" loading="eager">
     <figcaption>${credit ? 'Foto: ' + credit + ' · ' : ''}${im.page ? `<a href="${esc(im.page)}" target="_blank" rel="noopener">Wikimedia Commons</a>` : 'Wikimedia Commons'}</figcaption></figure>`;

@@ -164,11 +164,20 @@ assert.equal(pickImage({ query: { pages: [img('File:x.jpg', { thumburl: 'https:/
 assert.equal(pickImage({ query: { pages: { 5: img('File:Stari format.jpg') } } }).license, 'CC BY-SA 4.0', 'radi i stari format odgovora');
 assert.ok(searchUrl('Lionel Messi').startsWith('https://commons.wikimedia.org/w/api.php?') && searchUrl('Lionel Messi').includes('Lionel+Messi+filetype%3Abitmap'));
 let seenUA = null;
-assert.ok(await findImage('Lionel Messi', async (u, o) => { seenUA = o.headers['User-Agent']; return { ok: true, json: async () => resp }; }));
+let r = await findImage('Lionel Messi', async (u, o) => { seenUA = o.headers['User-Agent']; return { ok: true, json: async () => resp }; });
+assert.equal(r.status, 'ok'); assert.ok(r.image.url);
 assert.ok(seenUA && seenUA.includes('Asocijacije'), 'šalje User-Agent');
-assert.equal(await findImage('x', async () => { throw new Error('mreža'); }), null, 'greška mreže: null, bez rušenja');
-assert.equal(await findImage('x', async () => ({ ok: false })), null);
-assert.equal(await findImage(null, async () => { throw new Error('ne smije zvati'); }), null);
+r = await findImage('x', async () => { throw new Error('mreža'); }); assert.deepEqual(r, { image: null, status: 'greška mreže' }, 'greška mreže: bez rušenja');
+r = await findImage('x', async () => ({ ok: false, status: 403 })); assert.deepEqual(r, { image: null, status: 'http 403' }, 'HTTP greška se vidi u statusu');
+r = await findImage(null, async () => { throw new Error('ne smije zvati'); }); assert.equal(r.image, null);
+// prvi pokušaj (samo fotografije) bez rezultata -> drugi bez filtera
+const urls = [];
+r = await findImage('Rijetko', async (u) => { urls.push(u); return { ok: true, json: async () => (urls.length === 1 ? { batchcomplete: true } : resp) }; });
+assert.equal(urls.length, 2); assert.ok(urls[0].includes('filetype%3Abitmap') && !urls[1].includes('filetype')); assert.equal(r.status, 'ok');
+r = await findImage('Samo grbovi', async () => ({ ok: true, json: async () => ({ query: { pages: [img('File:Club crest.png')] } }) }));
+assert.deepEqual(r, { image: null, status: 'nema odgovarajuće slike' });
+// riječ "map" u "Mapei" ne smije izbaciti sliku (samo cijela riječ)
+assert.ok(pickImage({ query: { pages: [img('File:Mapei Stadium 2019.jpg')] } }), 'Mapei nije "map"');
 // u igri: slika i emoji se ne šalju dok runda traje
 {
   const gg = G.newGame([{}, {}, null, null], { rounds: 1 });

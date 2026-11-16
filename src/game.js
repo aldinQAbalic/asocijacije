@@ -85,7 +85,7 @@ function startRound(g) {
   g.opened = { A: [0, 0, 0, 0], B: [0, 0, 0, 0], C: [0, 0, 0, 0], D: [0, 0, 0, 0] };
   g.solved = { A: -1, B: -1, C: -1, D: -1, F: -1 };   // -1 neriješeno, -2 niko (otkriveno), inače mjesto igrača
   g.turn = g.players[g.round % g.players.length];      // svaku rundu počinje sljedeći igrač
-  g.image = null; g.imageTried = false;               // slika pojma (traži je soba kad se otkrije konačno)
+  g.image = null; g.imageTried = false; g.imageDone = false; g.imageStatus = null;   // slika pojma (traži je soba kad se otkrije konačno)
   g.stage = 'open';
   g.phase = 'play';
   bump(g, { type: 'round', round: g.round, seat: g.turn });
@@ -249,5 +249,9 @@ export function publicView(g) {
     // slika i emoji tek kad je konačno otkriveno
     image: g.phase !== 'play' ? g.image || null : null,
     emoji: g.phase !== 'play' ? P.E || '⚽' : null,
+    // ako server nije dobio sliku, browser pokuša sam s istim pojmom
+    imageQuery: g.phase !== 'play' ? P.W || null : null,
+    imageDone: g.phase !== 'play' ? !!g.imageDone : false,
+    imageStatus: g.phase !== 'play' ? g.imageStatus || null : null,
   };
 }
