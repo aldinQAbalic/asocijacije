@@ -92,8 +92,9 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 .hint{color:var(--muted);font-size:13px;margin:10px 0 0}
 #start{margin-top:12px}
 /* igrači */
-.players{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.players{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:8px}
 .pl{background:var(--bg2);border-radius:12px;padding:8px 10px;border:2px solid transparent;position:relative;min-width:0;transition:border-color .2s}
+.pl.me .n{text-decoration:underline;text-underline-offset:3px}
 .pl.turn{border-color:var(--gold);box-shadow:0 0 0 3px #f2c14e30}
 .pl .n{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pl .s{font-size:22px;font-weight:800}
@@ -164,7 +165,14 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 @media (max-width:560px){
   .seats{grid-template-columns:1fr}
   .seat{min-height:52px;padding:8px 10px}
-  .players{grid-template-columns:repeat(2,1fr)}
+  .players{gap:5px}
+  .pl{padding:5px 7px;border-radius:10px}
+  .pl .n{font-size:11px}
+  .pl .s{font-size:18px;line-height:1.15}
+  .pl .you{display:none}
+  .pl .dot{display:none}
+  .pl{border-top:3px solid var(--pc)}
+  .pl .plus{font-size:12px;right:5px;bottom:4px}
   .fld{font-size:12px;padding:9px 3px;min-height:38px}
   .sol{font-size:13px}
   .board{gap:8px}
@@ -172,6 +180,11 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
   header .title .long{display:none}
 }
 @media (min-width:561px){header .title .short{display:none}}
+@media (max-width:400px){
+  header{gap:5px}
+  header .code{padding:5px 6px;font-size:12px;letter-spacing:.12em}
+  .iconbtn{padding:6px 8px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -186,8 +199,6 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
     <input id="name" maxlength="16" placeholder="npr. Aldin" autocomplete="nickname">
     <label>Teme asocijacija</label>
     <div class="chips" id="homeThemes"><span class="empty" style="padding:4px 0">Učitavam teme…</span></div>
-    <label>Težina</label>
-    <div class="chips" id="homeLevels"></div>
     <button class="btn primary wide" id="create">Napravi novu sobu</button>
     <div class="or">ili uđi u postojeću</div>
     <div class="row">
@@ -288,12 +299,12 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 'use strict';
 const COLS = ['A', 'B', 'C', 'D'];
 const COLORS = ['#ff5c6c', '#4ea3ff', '#ffb224', '#3ddc97'];
+const ROUND_OPTIONS = [4, 8, 12];
 const REACTIONS = ['😂', '🤔', '👏', '🙈', '😭', '🔥', '😎', '🤯', '😱', '🥳', '💀', '🤡', 'Bravo! 👏', 'Ma znam ja to! 😤', 'Nemam pojma 🤷'];
 
 // ---------- pomoćno ----------
 const $ = id => document.getElementById(id);
 let THEME_LIST = [];   // [{id, label, count}] stiže sa /api/open
-let LEVEL_LIST = [];   // isto, za težine
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch {} },
@@ -303,8 +314,6 @@ if (!PID) { PID = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toStr
 $('name').value = store.get('aso-name') || '';
 let homeThemes = [];
 try { homeThemes = JSON.parse(store.get('aso-themes') || '[]'); if (!Array.isArray(homeThemes)) homeThemes = []; } catch { homeThemes = []; }
-let homeLevels = [];
-try { homeLevels = JSON.parse(store.get('aso-levels') || '[]'); if (!Array.isArray(homeLevels)) homeLevels = []; } catch { homeLevels = []; }
 
 // ---------- teme ----------
 // Prazna lista = sve teme. Klik na "Sve" čisti izbor; klik na temu je uključi/isključi.
@@ -335,29 +344,6 @@ function renderHomeThemes() {
   homeThemes = homeThemes.filter(id => THEME_LIST.some(t => t.id === id));
   $('homeThemes').innerHTML = chipsHtml(homeThemes, 'data-htheme');
 }
-// ---------- težine (isto kao teme: prazna lista = miješano) ----------
-function toggleLevel(list, id) {
-  if (id === '*') return [];
-  let out = list.includes(id) ? list.filter(x => x !== id) : list.concat(id);
-  return out.length === LEVEL_LIST.length ? [] : out;
-}
-function levelNames(list, labels) {
-  if (!list || !list.length) return 'miješana težina';
-  return list.map(id => (labels && labels[id]) || (LEVEL_LIST.find(t => t.id === id) || {}).label || id).join(', ');
-}
-function renderHomeLevels() {
-  if (!LEVEL_LIST.length) return;
-  homeLevels = homeLevels.filter(id => LEVEL_LIST.some(t => t.id === id));
-  const all = !homeLevels.length;
-  $('homeLevels').innerHTML = `<button class="chip ${all ? 'on' : ''}" data-hlevel="*">🎲 Miješano</button>` +
-    LEVEL_LIST.map(t => `<button class="chip ${!all && homeLevels.includes(t.id) ? 'on' : ''}" data-hlevel="${t.id}">${esc(t.label)}<small>${t.count}</small></button>`).join('');
-}
-$('homeLevels').addEventListener('click', e => {
-  const b = e.target.closest('[data-hlevel]'); if (!b) return;
-  homeLevels = toggleLevel(homeLevels, b.dataset.hlevel);
-  store.set('aso-levels', JSON.stringify(homeLevels));
-  renderHomeLevels();
-});
 $('homeThemes').addEventListener('click', e => {
   const b = e.target.closest('[data-htheme]'); if (!b) return;
   homeThemes = toggleTheme(homeThemes, b.dataset.htheme);
@@ -522,14 +508,13 @@ function renderLobby(m) {
   const o = m.options;
   if (m.themes && !THEME_LIST.length) THEME_LIST = Object.entries(m.themes).map(([id, label]) => ({ id, label, count: '' }));
   // teme se biraju samo na početnoj stranici, u sobi se samo prikazuju
-  $('themeBox').innerHTML = `<div class="hint" style="margin:0">Teme: <b style="color:var(--ink)">${esc(themeNames(o.themes, m.themes))}</b>
-    · Težina: <b style="color:var(--ink)">${esc(levelNames(o.levels, m.levels))}</b></div>`;
+  $('themeBox').innerHTML = `<div class="hint" style="margin:0">Teme: <b style="color:var(--ink)">${esc(themeNames(o.themes, m.themes))}</b></div>`;
   if (host) {
-    let opts = '';
-    for (let i = 1; i <= m.maxRounds; i++) opts += `<option value="${i}" ${i === o.rounds ? 'selected' : ''}>${i}</option>`;
-    $('opts').innerHTML = `<label>Broj rundi <select id="roundsSel">${opts}</select></label>
+    // broj rundi: samo 4, 8 ili 12 (koliko ima asocijacija)
+    const opts = ROUND_OPTIONS.filter(n => n <= m.maxRounds)
+      .map(n => `<button class="chip ${n === o.rounds ? 'on' : ''}" data-rounds="${n}">${n}</button>`).join('');
+    $('opts').innerHTML = `<span>Broj rundi</span><span class="chips">${opts}</span>
       <label><input type="checkbox" id="pubChk" ${o.public ? 'checked' : ''}> Javna soba (vidi se na početnoj)</label>`;
-    $('roundsSel').onchange = e => send({ t: 'opt', rounds: +e.target.value });
     $('pubChk').onchange = e => send({ t: 'opt', public: e.target.checked });
   } else $('opts').innerHTML = `<span>Broj rundi: <b style="color:var(--ink)">${o.rounds}</b></span>`;
   const n = m.seats.filter(Boolean).length;
@@ -557,7 +542,8 @@ function standingsHtml(m) {
 // ---------- igra ----------
 function renderGame(m) {
   const g = m.game, me = m.you.seat, mine = myTurn(m);
-  $('players').innerHTML = g.players.map(s => `<div class="pl ${g.phase === 'play' && g.turn === s ? 'turn' : ''}" id="pl${s}" style="background:linear-gradient(180deg,${COLORS[s]}26,var(--bg2))">
+  $('players').style.gridTemplateColumns = `repeat(${g.players.length},minmax(0,1fr))`;
+  $('players').innerHTML = g.players.map(s => `<div class="pl ${g.phase === 'play' && g.turn === s ? 'turn' : ''} ${s === me ? 'me' : ''}" id="pl${s}" style="--pc:${COLORS[s]};background:linear-gradient(180deg,${COLORS[s]}26,var(--bg2))">
       ${s === me ? '<span class="you">TI</span>' : ''}
       <div class="n ${m.seats[s] && m.seats[s].online ? '' : 'off'}"><span class="dot" style="background:${COLORS[s]}"></span>${esc(seatName(m, s))}</div>
       <div class="s">${g.scores[s]}</div><span class="plus" id="plus${s}"></span></div>`).join('');
@@ -569,7 +555,7 @@ function renderGame(m) {
     if (mine) st = g.stage === 'open' ? 'Tvoj potez: <b>otvori jedno polje</b>' : 'Tvoj potez: <b>pogađaj</b> ili reci dalje';
     else st = `Na potezu: ${who} ${g.stage === 'open' ? '(otvara polje)' : '(pogađa)'}`;
   } else if (g.phase === 'roundOver') st = `Runda ${g.round + 1} od ${g.rounds} je gotova`;
-  $('status').innerHTML = `<span class="hint" style="margin-right:8px">Runda ${g.round + 1}/${g.rounds}${g.theme ? ' · ' + esc(g.theme) : ''}${g.level ? ' · ' + esc(g.level) : ''}</span> ${st}`;
+  $('status').innerHTML = `<span class="hint" style="margin-right:8px">Runda ${g.round + 1}/${g.rounds}${g.theme ? ' · ' + esc(g.theme) : ''}</span> ${st}`;
 
   // tabla
   const canOpen = mine && g.stage === 'open', canGuess = mine && g.stage === 'guess';
@@ -703,6 +689,7 @@ document.addEventListener('click', e => {
   else if (d.bot) send({ t: 'bot', seat: +d.bot });
   else if (d.clear) send({ t: 'clear', seat: +d.clear });
   else if (d.next) send({ t: 'next' });
+  else if (d.rounds) send({ t: 'opt', rounds: +d.rounds });
   else if (d.react) { send({ t: 'react', e: d.react }); $('rpick').classList.add('hidden'); }
 });
 $('btnGuess').addEventListener('click', doGuess);
@@ -774,7 +761,7 @@ $('create').addEventListener('click', async () => {
   if (!$('name').value.trim()) { $('homeErr').textContent = 'Upiši ime'; $('name').focus(); return; }
   $('create').disabled = true;
   try {
-    const r = await fetch('/api/rooms', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ themes: homeThemes, levels: homeLevels }) });
+    const r = await fetch('/api/rooms', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ themes: homeThemes }) });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error);
     await enterRoom(j.code);
@@ -799,8 +786,7 @@ async function loadRooms() {
   if (code || document.visibilityState !== 'visible') return;
   try {
     const r = await fetch('/api/open');
-    const { rooms, themes, levels } = await r.json();
-    if (levels && levels.length && !LEVEL_LIST.length) { LEVEL_LIST = levels; renderHomeLevels(); }
+    const { rooms, themes } = await r.json();
     if (themes && themes.length) { const first = !THEME_LIST.length || THEME_LIST.some(t => t.count === ''); THEME_LIST = themes; if (first) renderHomeThemes(); }
     const box = $('roomList');
     box.innerHTML = '';
@@ -809,7 +795,7 @@ async function loadRooms() {
       const row = document.createElement('div');
       row.className = 'roomrow';
       row.innerHTML = `<span class="slots">${[0, 1, 2, 3].map(i => `<b class="${i < x.players ? 'f' : ''}"></b>`).join('')}</span>
-        <span class="nm">Soba: ${esc(x.host)}<small>${x.rounds} ${x.rounds === 1 ? 'runda' : x.rounds < 5 ? 'runde' : 'rundi'} · ${esc(themeNames(x.themes))} · ${esc(levelNames(x.levels))} · ${x.players}/4${x.over ? ' · između partija' : ''}</small></span>`;
+        <span class="nm">Soba: ${esc(x.host)}<small>${x.rounds} ${x.rounds === 1 ? 'runda' : x.rounds < 5 ? 'runde' : 'rundi'} · ${esc(themeNames(x.themes))} · ${x.players}/4${x.over ? ' · između partija' : ''}</small></span>`;
       const b = document.createElement('button');
       b.className = 'btn'; b.textContent = 'Uđi';
       b.addEventListener('click', () => {

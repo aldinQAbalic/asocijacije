@@ -68,8 +68,10 @@ assert.deepEqual(Object.keys(e).sort(), ['code', 'free', 'host', 'levels', 'over
 A.send({ t: 'opt', themes: [th1] }); await sleep(200); assert.deepEqual(A.state.options.themes, [], 'teme se ne mijenjaju u sobi');
 A.send({ t: 'opt', public: false }); await A.until(s => !s.options.public); await sleep(100);
 assert.equal(await listed(), undefined, 'privatna soba nije na listi');
-A.send({ t: 'opt', public: true, rounds: 3, nesto: 1 }); await A.until(s => s.options.public && s.options.rounds === 3); await sleep(100);
-A.send({ t: 'opt', rounds: 999 }); await sleep(150); assert.equal(A.state.options.rounds, 3, 'neispravan broj rundi se ignoriše');
+A.send({ t: 'opt', public: true, rounds: 8, nesto: 1 }); await A.until(s => s.options.public && s.options.rounds === 8); await sleep(100);
+for (const bad of [3, 5, 999]) { A.send({ t: 'opt', rounds: bad }); await sleep(120); assert.equal(A.state.options.rounds, 8, 'samo 4, 8 ili 12 rundi: ' + bad); }
+A.send({ t: 'opt', rounds: 12 }); await A.until(s => s.options.rounds === 12);
+A.send({ t: 'opt', rounds: 4 }); await A.until(s => s.options.rounds === 4);
 assert.ok(await listed()); assert.equal(A.state.options.nesto, undefined);
 console.log('postavke i lista soba OK');
 
@@ -141,7 +143,7 @@ while (true) {
 leakCheck(A); leakCheck(B2);
 const g = A.state.game;
 console.log('partija gotova za', Math.round((Date.now() - t0) / 1000), 's · akcija ljudi:', actions, '· bodovi:', g.scores);
-assert.equal(g.round, 2); assert.ok(sawRoundOver >= 2); assert.ok(actions > 0, 'ljudi su igrali');
+assert.equal(g.round, 3); assert.ok(sawRoundOver >= 3); assert.ok(actions > 0, 'ljudi su igrali');
 const unexpected = [...A.errors, ...B2.errors].filter(x => !['Nisi na potezu', 'Runda nije u toku', 'Runda još traje', 'Samo domaćin pokreće sljedeću rundu'].includes(x));
 assert.deepEqual(unexpected, [], 'neočekivane greške: ' + unexpected);
 

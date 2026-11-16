@@ -11,6 +11,7 @@ const ROUND_PAUSE_MS = 9_000;    // pauza između rundi (vidi se rješenje)
 const ROOM_TTL_MS = 24 * 3600_000;
 const MAX_SOCKETS = 30;
 export const REACTIONS = ['😂', '🤔', '👏', '🙈', '😭', '🔥', '😎', '🤯', '😱', '🥳', '💀', '🤡', 'Bravo! 👏', 'Ma znam ja to! 😤', 'Nemam pojma 🤷'];
+export const ROUND_OPTIONS = [4, 8, 12];   // domaćin bira samo između ovih
 const DEFAULT_OPTIONS = { rounds: 4, public: true, themes: [], levels: [] };   // [] = sve teme / sve težine
 const BOT_NAMES = ['Bot Mujo', 'Bot Haso', 'Bot Fata', 'Bot Suljo'];
 
@@ -378,9 +379,14 @@ function setLevels(o, list) {
   o.levels = l;
   fitRounds(o);
 }
-function fitRounds(o) { o.rounds = Math.max(1, Math.min(o.rounds, G.maxRoundsFor(o.themes, o.levels || []))); }
+// Ako izabrane teme nemaju dovoljno asocijacija, uzme se najveća ponuđena opcija koja stane (ili koliko ih ima).
+function fitRounds(o) {
+  const max = G.maxRoundsFor(o.themes, o.levels || []);
+  if (o.rounds <= max) return;
+  o.rounds = [...ROUND_OPTIONS].reverse().find(n => n <= max) || Math.max(1, max);
+}
 function setRounds(o, n) {
-  if (n >= 1 && n <= G.maxRoundsFor(o.themes, o.levels || [])) o.rounds = n;
+  if (ROUND_OPTIONS.includes(n) && n <= G.maxRoundsFor(o.themes, o.levels || [])) o.rounds = n;
 }
 
 function cleanName(n) {

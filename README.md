@@ -43,12 +43,12 @@ npx wrangler dev
 ```
 
 Otvori http://localhost:8787 u dva prozora (jedan običan, jedan privatni) da glumiš dva igrača.
-U drugom terminalu: `node test/online.mjs` odigra partiju od 3 runde preko mreže (traje oko minut).
+U drugom terminalu: `node test/online.mjs` odigra partiju od 4 runde preko mreže (traje oko minut i po).
 
 ## Teme
 
 Teme se biraju samo na početnoj stranici, prije „Napravi novu sobu“ (može više njih, ili „Sve teme“). U sobi se samo prikazuju i ne mogu se mijenjati.
-Izbor se pamti u browseru. Broj rundi je ograničen brojem asocijacija u izabranim temama.
+Izbor se pamti u browseru.
 Za sada postoji samo tema ⚽ Fudbal (46 asocijacija). Kad je tema samo jedna, na početnoj se prikazuje samo ona.
 Stare teme (Svakodnevica, Priroda, Sport, Naše, Kultura, Pojmovi i pravila) su u `src/puzzles-ostalo.js`; da ih vratiš, prekopiraj teme u `THEMES` i asocijacije u `PUZZLES`.
 
@@ -57,9 +57,8 @@ Nova tema: dodaj je u `THEMES` na vrhu `src/puzzles.js` (`id: 'naziv'`) i napiš
 
 ## Težine
 
-Pored teme, na početnoj se bira i težina: 🎲 Miješano, 🟢 Lako (26) ili 🟡 Srednje (20). Kao i teme, bira se samo pri pravljenju sobe.
-Asocijacija bez `L` je lako; srednja ima `L: 'srednje'`. Za teško: dodaj `tesko: '🔴 Teško'` u `LEVELS` u `src/puzzles.js`
-i napiši bar 5 asocijacija s `L: 'tesko'` (`npm test` provjerava da svaka težina ima bar 5).
+Asocijacije imaju oznaku težine (`L: 'srednje'`; bez `L` = lako), ali se težina za sada ne bira:
+igra nasumično uzima iz svih asocijacija (26 lakih + 20 srednjih). Oznake su tu ako se izbor kasnije vrati.
 
 ## Nove asocijacije
 
@@ -74,7 +73,7 @@ U `src/puzzles.js` dodaj novi blok:
 - Prvo u listi je rješenje koje se prikazuje, ostalo iza `|` se takođe priznaje.
 - Kvačice, velika slova i razmaci se ne gledaju. Kod riječi od 5+ slova prolazi i jedna greška u kucanju.
 - `npm test` provjeri da svaka kolona ima rješenje i tačno 4 polja.
-- Broj rundi u sobi može ići do broja asocijacija; u jednoj partiji se ne ponavljaju.
+- Asocijacije se u jednoj partiji ne ponavljaju.
 
 ## Pravila
 
@@ -83,7 +82,7 @@ U `src/puzzles.js` dodaj novi blok:
 - **Kolona:** 2 boda + 1 za svako neotvoreno polje u toj koloni.
 - **Konačno rješenje:** 7 bodova + bodovi svih neriješenih kolona. Runda se tada završava.
 - Kad su sva polja otvorena, odmah se pogađa. Ako niko ne zna, igrač na potezu može otkriti rješenje (bez bodova).
-- Svaku rundu počinje sljedeći igrač. Teme se biraju pri pravljenju sobe; domaćin u sobi bira broj rundi i da li je soba javna.
+- Svaku rundu počinje sljedeći igrač. Teme se biraju pri pravljenju sobe; domaćin u sobi bira broj rundi (4, 8 ili 12) i da li je soba javna.
 - **Vrijeme:** 25 s za otvaranje, 45 s za pogađanje (8 s ako je igrač ispao s mreže).
   Kad istekne: otvori se nasumično polje, odnosno igrač kaže dalje.
 - Između rundi je pauza od 9 s (vidi se rješenje); domaćin je može preskočiti.
