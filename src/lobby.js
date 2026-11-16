@@ -23,7 +23,7 @@ export class Lobby extends DurableObject {
       if (stale.length) await this.ctx.storage.delete(stale);
       rooms.sort((a, b) => b.updated - a.updated);
       // šalje se samo ono što početna stranica prikazuje
-      const out = rooms.slice(0, MAX_LIST).map(r => ({ code: r.code, host: r.host, players: r.players, free: r.free, over: r.over, rounds: r.rounds, themes: r.themes || [] }));
+      const out = rooms.slice(0, MAX_LIST).map(r => ({ code: r.code, host: r.host, players: r.players, free: r.free, over: r.over, rounds: r.rounds, themes: r.themes || [], levels: r.levels || [] }));
       return new Response(JSON.stringify({ rooms: out }), { headers: { 'content-type': 'application/json; charset=utf-8' } });
     }
     return new Response('not found', { status: 404 });

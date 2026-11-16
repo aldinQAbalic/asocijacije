@@ -7,6 +7,7 @@ export const THEMES_OSTALO = {
   sport: '⚽ Sport',
   bih: '🌉 Naše',   // zastava 🇧🇦 se na Windowsu prikaže kao slova "BA"
   kultura: '🎭 Kultura',
+  pojmovi: '📏 Pojmovi i pravila',
 };
 
 // Asocijacije. Svaka kolona: [rješenje|druge varijante, polje1, polje2, polje3, polje4]
@@ -156,4 +157,30 @@ export const PUZZLES_OSTALO = [
     B: ['BOJE|boja', 'ulje', 'akvarel', 'tempera', 'paleta'],
     C: ['PLATNO', 'štafelaj', 'lan', 'jedro', 'zategnuto'],
     D: ['MUZEJ|galerija', 'Louvre', 'izložba', 'eksponat', 'kustos'] },
+  // ---------- pojmovi i pravila ----------
+  { T: 'pojmovi', F: 'PENAL|penali|jedanaesterac',
+    A: ['TAČKA|bijela tačka', 'bijela', 'jedanaest metara', 'zarez', 'kraj rečenice'],
+    B: ['GOLMAN|vratar|golmani', 'rukavice', 'odbrana', 'Buffon', 'Courtois'],
+    C: ['FAUL|prekršaj', 'start', 'rušenje', 'žuti karton', 'sudija svira'],
+    D: ['VAR', 'monitor', 'snimak', 'provjera', 'video'] },
+  { T: 'pojmovi', F: 'OFSAJD|zaleđe|offside',
+    A: ['ZASTAVICA|zastava', 'linijski', 'podignuta', 'kornerska', 'signal'],
+    B: ['LINIJA|linije', 'gol-linija', 'aut', 'centar', 'crta'],
+    C: ['ODBRANA|defanziva|zadnja linija', 'štoper', 'bek', 'zid', 'protiv napada'],
+    D: ['NAPADAČ|napadači|strijelac', 'centarfor', 'špic', 'golgeter', 'devetka'] },
+  { T: 'pojmovi', F: 'KORNER|udarac iz ugla|kornerski udarac',
+    A: ['UGAO|kut', 'pravi', 'devedeset stepeni', 'sobe', 'oštri'],
+    B: ['CENTARŠUT|ubačaj|centaršutevi', 'krilo', 'glava', 'visoka lopta', 'kazneni prostor'],
+    C: ['SKOK', 'odraz', 'uvis', 'glavom', 'u dalj'],
+    D: ['GOL|golovi', 'mreža', 'prečka', 'stativa', 'autogol'] },
+  { T: 'pojmovi', F: 'KARTON|kartoni',
+    A: ['ŽUTI|žuta|žuto', 'limun', 'banana', 'sunce', 'opomena'],
+    B: ['CRVENI|crvena|crveno', 'ruža', 'krv', 'paprika', 'isključenje'],
+    C: ['SUDIJA|sudac|sudije', 'zviždaljka', 'glavni', 'pomoćni', 'Collina'],
+    D: ['KUTIJA|kutije', 'pizza', 'selidba', 'cipele', 'poklon'] },
+  { T: 'pojmovi', F: 'TRANSFER|transferi|prelazak',
+    A: ['UGOVOR|ugovori', 'potpis', 'klauzula', 'menadžer', 'godine'],
+    B: ['NOVAC|pare|novci', 'euro', 'milioni', 'plata', 'bogataš'],
+    C: ['PRELAZNI ROK|prijelazni rok|transferni rok|rok', 'ljetni', 'zimski', 'otvara se', 'zatvara se'],
+    D: ['KLUB|klubovi', 'novi', 'matični', 'navijači', 'predsjednik'] },
 ];

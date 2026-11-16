@@ -1,7 +1,7 @@
 // Pravila Asocijacija: samo logika, bez mreže. Server je sudija; browser nikad ne dobije neotkrivena rješenja.
-import { PUZZLES, THEMES } from './puzzles.js';
+import { PUZZLES, THEMES, LEVELS } from './puzzles.js';
 
-export { THEMES };
+export { THEMES, LEVELS };
 export const COLS = ['A', 'B', 'C', 'D'];
 export const MAX_ROUNDS = PUZZLES.length;
 
@@ -12,12 +12,21 @@ export function cleanThemes(list) {
   const out = [...new Set(list.filter(t => typeof t === 'string' && Object.hasOwn(THEMES, t)))];
   return out.length === Object.keys(THEMES).length ? [] : out;
 }
-// Indeksi asocijacija iz izabranih tema
-export function poolFor(themes) {
-  const t = cleanThemes(themes);
-  return PUZZLES.map((p, i) => (t.length === 0 || t.includes(p.T) ? i : -1)).filter(i => i >= 0);
+// ---------- težine ----------
+export const levelOf = p => p.L || 'lako';
+// Prazna lista = sve težine (miješano)
+export function cleanLevels(list) {
+  if (!Array.isArray(list)) return [];
+  const out = [...new Set(list.filter(t => typeof t === 'string' && Object.hasOwn(LEVELS, t)))];
+  return out.length === Object.keys(LEVELS).length ? [] : out;
 }
-export const maxRoundsFor = themes => poolFor(themes).length;
+
+// Indeksi asocijacija iz izabranih tema i težina
+export function poolFor(themes, levels) {
+  const t = cleanThemes(themes), l = cleanLevels(levels);
+  return PUZZLES.map((p, i) => ((t.length === 0 || t.includes(p.T)) && (l.length === 0 || l.includes(levelOf(p))) ? i : -1)).filter(i => i >= 0);
+}
+export const maxRoundsFor = (themes, levels) => poolFor(themes, levels).length;
 
 // ---------- provjera odgovora ----------
 // Bez kvačica, razmaka i znakova; đ = dj. Duža rješenja (5+ slova) praštaju jednu grešku u kucanju.
@@ -56,7 +65,8 @@ function shuffle(a, rnd = Math.random) {
 export function newGame(seats, opts = {}) {
   const players = seats.map((s, i) => (s ? i : -1)).filter(i => i >= 0);
   if (players.length < 2) throw new Error('Trebaju najmanje 2 igrača');
-  const pool = poolFor(opts.themes);
+  const pool = poolFor(opts.themes, opts.levels);
+  if (!pool.length) throw new Error('Nema asocijacija za izabranu temu i težinu');
   const rounds = Math.max(1, Math.min(pool.length, Math.floor(opts.rounds) || 4));
   const order = Array.isArray(opts.order) ? opts.order.slice(0, rounds) : shuffle(pool, opts.rnd).slice(0, rounds);
   const g = { phase: 'play', players, rounds, round: 0, order, scores: [0, 0, 0, 0], seq: 0, last: null, log: [] };
@@ -231,6 +241,7 @@ export function publicView(g) {
   return {
     phase: g.phase, players: g.players, round: g.round, rounds: g.rounds, scores: g.scores,
     theme: THEMES[P.T] || '',
+    level: LEVELS[levelOf(P)] || '',
     turn: g.turn, stage: g.stage, seq: g.seq, last: g.last, log: g.log,
     fields, sols, solved: g.solved, pts, allOpen: !anyClosed(g),
   };

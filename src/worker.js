@@ -5,7 +5,7 @@ import icon512 from './assets/icon-512.png';
 import iconMask from './assets/icon-maskable.png';
 import appleIcon from './assets/apple-touch-icon.png';
 import swCode from './sw.txt';
-import { THEMES, PUZZLES } from './puzzles.js';
+import { THEMES, LEVELS, PUZZLES } from './puzzles.js';
 export { Room } from './room.js';
 export { Lobby } from './lobby.js';
 
@@ -46,6 +46,7 @@ const STATIC = {
 };
 
 const THEME_LIST = Object.entries(THEMES).map(([id, label]) => ({ id, label, count: PUZZLES.filter(p => p.T === id).length }));
+const LEVEL_LIST = Object.entries(LEVELS).map(([id, label]) => ({ id, label, count: PUZZLES.filter(p => (p.L || 'lako') === id).length }));
 
 function newCode() {
   const b = crypto.getRandomValues(new Uint8Array(5));
@@ -62,7 +63,7 @@ export default {
       const text = await request.text().catch(() => '');
       let body = {};
       if (text.length < 1000) { try { body = JSON.parse(text) || {}; } catch {} }
-      const init = JSON.stringify({ themes: Array.isArray(body.themes) ? body.themes.slice(0, 20) : [], rounds: Number.isInteger(body.rounds) ? body.rounds : undefined });
+      const init = JSON.stringify({ themes: Array.isArray(body.themes) ? body.themes.slice(0, 20) : [], levels: Array.isArray(body.levels) ? body.levels.slice(0, 10) : [], rounds: Number.isInteger(body.rounds) ? body.rounds : undefined });
       for (let i = 0; i < 5; i++) {
         const code = newCode();
         const stub = env.ROOMS.get(env.ROOMS.idFromName(code));
@@ -75,7 +76,7 @@ export default {
     if (path === '/api/open' && request.method === 'GET') {
       const r = await env.LOBBY.get(env.LOBBY.idFromName('main')).fetch('https://lobby/list');
       // uz listu soba ide i lista tema (za izbor na početnoj stranici)
-      return json({ ...(await r.json()), themes: THEME_LIST });
+      return json({ ...(await r.json()), themes: THEME_LIST, levels: LEVEL_LIST });
     }
 
     const info = path.match(/^\/api\/rooms\/([^/]+)$/);

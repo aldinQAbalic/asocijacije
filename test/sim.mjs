@@ -1,5 +1,5 @@
 import * as G from '../src/game.js';
-import { PUZZLES, THEMES } from '../src/puzzles.js';
+import { PUZZLES, THEMES, LEVELS } from '../src/puzzles.js';
 import assert from 'node:assert';
 
 // ---------- asocijacije su ispravno upisane ----------
@@ -11,27 +11,42 @@ PUZZLES.forEach((p, n) => {
   }
 });
 for (const p of PUZZLES) assert.ok(Object.hasOwn(THEMES, p.T), `nepoznata tema ${p.T} kod ${p.F}`);
+for (const p of PUZZLES) assert.ok(Object.hasOwn(LEVELS, G.levelOf(p)), `nepoznata težina ${p.L} kod ${p.F}`);
+for (const l of Object.keys(LEVELS)) assert.ok(PUZZLES.filter(p => G.levelOf(p) === l).length >= 5, `težina ${l} treba bar 5 asocijacija`);
 for (const t of Object.keys(THEMES)) assert.ok(PUZZLES.filter(p => p.T === t).length >= 5, `tema ${t} treba bar 5 asocijacija`);
 // nijedno polje ne smije samo po sebi biti prihvaćeno kao rješenje svoje kolone ili konačno
 for (const p of PUZZLES) for (const c of G.COLS) for (const w of p[c].slice(1))
   assert.ok(!G.matches(w, p[c][0]) && !G.matches(w, p.F), `polje "${w}" odaje rješenje (${G.label(p.F)} ${c})`);
 const finalWords = PUZZLES.map(p => G.norm(G.label(p.F)));
 assert.equal(new Set(finalWords).size, finalWords.length, 'dva puta isto konačno rješenje');
-console.log('asocijacija:', PUZZLES.length, '·', Object.keys(THEMES).map(t => `${t}: ${PUZZLES.filter(p => p.T === t).length}`).join(', '));
+console.log('asocijacija:', PUZZLES.length, '·', Object.keys(THEMES).map(t => `${t}: ${PUZZLES.filter(p => p.T === t).length}`).join(', '), '·', Object.keys(LEVELS).map(l => `${l}: ${PUZZLES.filter(p => G.levelOf(p) === l).length}`).join(', '));
 
 // ---------- teme ----------
-const [t1, t2] = Object.keys(THEMES);
-assert.deepEqual(G.cleanThemes([t1, t1, 'xxx', 5]), [t1]);
-assert.deepEqual(G.cleanThemes(Object.keys(THEMES)), [], 'sve teme izabrane = prazna lista');
+const ids = Object.keys(THEMES), [t1] = ids;
+const one = ids.length === 1;
+assert.deepEqual(G.cleanThemes([t1, t1, 'xxx', 5]), one ? [] : [t1], 'duplikati i nepoznate teme se izbace');
+assert.deepEqual(G.cleanThemes(ids), [], 'sve teme izabrane = prazna lista');
 assert.deepEqual(G.cleanThemes(t1), []);
 assert.equal(G.poolFor([]).length, PUZZLES.length);
 assert.equal(G.maxRoundsFor([t1]), PUZZLES.filter(p => p.T === t1).length);
 for (let k = 0; k < 50; k++) {
-  const gg = G.newGame([{}, {}, null, null], { themes: [t1, t2], rounds: 99 });
-  assert.equal(gg.rounds, G.maxRoundsFor([t1, t2]), 'runde ograničene brojem asocijacija u temama');
-  assert.ok(gg.order.every(i => [t1, t2].includes(PUZZLES[i].T)), 'samo izabrane teme');
+  const gg = G.newGame([{}, {}, null, null], { themes: [t1], rounds: 99 });
+  assert.equal(gg.rounds, G.maxRoundsFor([t1]), 'runde ograničene brojem asocijacija u temi');
+  assert.ok(gg.order.every(i => PUZZLES[i].T === t1), 'samo izabrana tema');
   assert.equal(G.publicView(gg).theme, THEMES[PUZZLES[gg.order[0]].T]);
 }
+
+// ---------- težine ----------
+const lvls = Object.keys(LEVELS);
+assert.deepEqual(G.cleanLevels([lvls[0], lvls[0], 'xxx']), lvls.length > 1 ? [lvls[0]] : []);
+assert.deepEqual(G.cleanLevels(lvls), []);
+for (const l of lvls) {
+  const gg = G.newGame([{}, {}, null, null], { levels: [l], rounds: 99 });
+  assert.equal(gg.rounds, PUZZLES.filter(p => G.levelOf(p) === l).length);
+  assert.ok(gg.order.every(i => G.levelOf(PUZZLES[i]) === l), 'samo izabrana težina');
+  assert.equal(G.publicView(gg).level, LEVELS[l]);
+}
+assert.equal(G.maxRoundsFor([], []), PUZZLES.length);
 
 // ---------- provjera odgovora ----------
 assert.ok(G.matches('plaza', 'PLAŽA'));

@@ -11,7 +11,7 @@ const ROUND_PAUSE_MS = 9_000;    // pauza između rundi (vidi se rješenje)
 const ROOM_TTL_MS = 24 * 3600_000;
 const MAX_SOCKETS = 30;
 export const REACTIONS = ['😂', '🤔', '👏', '🙈', '😭', '🔥', '😎', '🤯', '😱', '🥳', '💀', '🤡', 'Bravo! 👏', 'Ma znam ja to! 😤', 'Nemam pojma 🤷'];
-const DEFAULT_OPTIONS = { rounds: 4, public: true, themes: [] };   // themes: [] = sve teme
+const DEFAULT_OPTIONS = { rounds: 4, public: true, themes: [], levels: [] };   // [] = sve teme / sve težine
 const BOT_NAMES = ['Bot Mujo', 'Bot Haso', 'Bot Fata', 'Bot Suljo'];
 
 export class Room extends DurableObject {
@@ -41,6 +41,7 @@ export class Room extends DurableObject {
       const body = await request.json().catch(() => ({}));
       const options = { ...DEFAULT_OPTIONS };
       setThemes(options, body && body.themes);
+      setLevels(options, body && body.levels);
       if (body && Number.isInteger(body.rounds)) setRounds(options, body.rounds);
       this.data = { created: Date.now(), hostPid: null, seats: [null, null, null, null], game: null, due: null, options };
       await this.save();
@@ -148,7 +149,7 @@ export class Room extends DurableObject {
         if (!lobby) throw new Error('Igra je već u toku');
         if (d.seats.filter(Boolean).length < 2) throw new Error('Trebaju najmanje 2 igrača');
         if (!d.seats.some(s => s && !s.bot)) throw new Error('Treba bar jedan čovjek');
-        d.game = G.newGame(d.seats, { rounds: d.options.rounds, themes: d.options.themes });
+        d.game = G.newGame(d.seats, { rounds: d.options.rounds, themes: d.options.themes, levels: d.options.levels });
         break;
       }
       case 'open': {
@@ -291,7 +292,7 @@ export class Room extends DurableObject {
     let host = null;
     for (const w of this.sockets(closing)) { const a = w.deserializeAttachment() || {}; if (a.pid === d.hostPid) host = a.name; }
     const listed = d.options.public && lobby && free > 0 && host !== null;
-    const entry = listed ? { code: d.code, host, players: 4 - free, free, over: !!d.game, rounds: d.options.rounds, themes: d.options.themes } : null;
+    const entry = listed ? { code: d.code, host, players: 4 - free, free, over: !!d.game, rounds: d.options.rounds, themes: d.options.themes, levels: d.options.levels } : null;
     const key = JSON.stringify(entry);
     if (key === d.reported) return;
     try {
@@ -335,8 +336,9 @@ export class Room extends DurableObject {
       hostSeat: d.seats.findIndex(s => s && !s.bot && s.pid === d.hostPid),
       // pid drugih igrača se nikad ne šalje (to je njihova "lozinka" za sjedište)
       options: d.options,
-      maxRounds: G.maxRoundsFor(d.options.themes),
+      maxRounds: G.maxRoundsFor(d.options.themes, d.options.levels),
       themes: G.THEMES,
+      levels: G.LEVELS,
       seats: d.seats.map(s => s && { name: s.name, bot: s.bot, online: s.bot || people.has(s.pid) }),
       watching: [...people.keys()].filter(p => this.seatOf(p) === -1).length,
       game: d.game && G.publicView(d.game),
@@ -364,10 +366,21 @@ function setThemes(o, list) {
   const t = G.cleanThemes(list);
   if (list.length && !t.length && list.some(x => !Object.hasOwn(G.THEMES, x))) return;   // samo nepoznate teme: ignoriši
   o.themes = t;
-  o.rounds = Math.min(o.rounds, G.maxRoundsFor(t));
+  fitRounds(o);
 }
+// Težine se, kao i teme, biraju samo pri pravljenju sobe
+function setLevels(o, list) {
+  if (!Array.isArray(list)) return;
+  const l = G.cleanLevels(list);
+  if (list.length && !l.length && list.some(x => !Object.hasOwn(G.LEVELS, x))) return;
+  // izbor bez ijedne asocijacije (npr. tema bez te težine) se ignoriše
+  if (!G.maxRoundsFor(o.themes, l)) return;
+  o.levels = l;
+  fitRounds(o);
+}
+function fitRounds(o) { o.rounds = Math.max(1, Math.min(o.rounds, G.maxRoundsFor(o.themes, o.levels || []))); }
 function setRounds(o, n) {
-  if (n >= 1 && n <= G.maxRoundsFor(o.themes)) o.rounds = n;
+  if (n >= 1 && n <= G.maxRoundsFor(o.themes, o.levels || [])) o.rounds = n;
 }
 
 function cleanName(n) {
