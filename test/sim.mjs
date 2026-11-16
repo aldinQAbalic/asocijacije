@@ -12,20 +12,24 @@ PUZZLES.forEach((p, n) => {
 });
 for (const p of PUZZLES) assert.ok(Object.hasOwn(THEMES, p.T), `nepoznata tema ${p.T} kod ${p.F}`);
 for (const t of Object.keys(THEMES)) assert.ok(PUZZLES.filter(p => p.T === t).length >= 5, `tema ${t} treba bar 5 asocijacija`);
+// nijedno polje ne smije samo po sebi biti prihvaćeno kao rješenje svoje kolone ili konačno
+for (const p of PUZZLES) for (const c of G.COLS) for (const w of p[c].slice(1))
+  assert.ok(!G.matches(w, p[c][0]) && !G.matches(w, p.F), `polje "${w}" odaje rješenje (${G.label(p.F)} ${c})`);
 const finalWords = PUZZLES.map(p => G.norm(G.label(p.F)));
 assert.equal(new Set(finalWords).size, finalWords.length, 'dva puta isto konačno rješenje');
 console.log('asocijacija:', PUZZLES.length, '·', Object.keys(THEMES).map(t => `${t}: ${PUZZLES.filter(p => p.T === t).length}`).join(', '));
 
 // ---------- teme ----------
-assert.deepEqual(G.cleanThemes(['sport', 'sport', 'xxx', 5]), ['sport']);
+const [t1, t2] = Object.keys(THEMES);
+assert.deepEqual(G.cleanThemes([t1, t1, 'xxx', 5]), [t1]);
 assert.deepEqual(G.cleanThemes(Object.keys(THEMES)), [], 'sve teme izabrane = prazna lista');
-assert.deepEqual(G.cleanThemes('sport'), []);
+assert.deepEqual(G.cleanThemes(t1), []);
 assert.equal(G.poolFor([]).length, PUZZLES.length);
-assert.equal(G.maxRoundsFor(['sport']), PUZZLES.filter(p => p.T === 'sport').length);
+assert.equal(G.maxRoundsFor([t1]), PUZZLES.filter(p => p.T === t1).length);
 for (let k = 0; k < 50; k++) {
-  const gg = G.newGame([{}, {}, null, null], { themes: ['sport', 'bih'], rounds: 99 });
-  assert.equal(gg.rounds, G.maxRoundsFor(['sport', 'bih']), 'runde ograničene brojem asocijacija u temama');
-  assert.ok(gg.order.every(i => ['sport', 'bih'].includes(PUZZLES[i].T)), 'samo izabrane teme');
+  const gg = G.newGame([{}, {}, null, null], { themes: [t1, t2], rounds: 99 });
+  assert.equal(gg.rounds, G.maxRoundsFor([t1, t2]), 'runde ograničene brojem asocijacija u temama');
+  assert.ok(gg.order.every(i => [t1, t2].includes(PUZZLES[i].T)), 'samo izabrane teme');
   assert.equal(G.publicView(gg).theme, THEMES[PUZZLES[gg.order[0]].T]);
 }
 
@@ -46,28 +50,30 @@ assert.equal(G.cleanGuess('<b>  x'.padEnd(80, 'y')).length, 30);
 
 // ---------- ciljani testovi pravila ----------
 const seats = n => [0, 1, 2, 3].map(i => (i < n ? { name: 'P' + i } : null));
+// prve tri asocijacije iz puzzles.js, pa test ne zavisi od toga koje su upisane
+const [P0, P1, P2] = PUZZLES, L = G.label;
 let g = G.newGame(seats(3), { order: [0, 1, 2], rounds: 3 });
 assert.deepEqual(g.players, [0, 1, 2]);
 assert.equal(g.turn, 0); assert.equal(g.stage, 'open');
-assert.throws(() => G.guess(g, 'A', 'plaza'), /Prvo otvori/);
+assert.throws(() => G.guess(g, 'A', L(P0.A[0])), /Prvo otvori/);
 assert.throws(() => G.pass(g), /Prvo otvori/);
 assert.throws(() => G.open(g, 'E', 0)); assert.throws(() => G.open(g, 'A', 4));
 G.open(g, 'A', 0);
-assert.equal(g.stage, 'guess'); assert.equal(g.last.word, 'pijesak');
+assert.equal(g.stage, 'guess'); assert.equal(g.last.word, P0.A[1]);
 assert.throws(() => G.open(g, 'A', 1), /pogađa/);
 assert.equal(G.colPts(g, 'A'), 5, '2 + 3 neotvorena');
-assert.equal(G.guess(g, 'A', 'plaza'), true);
+assert.equal(G.guess(g, 'A', L(P0.A[0]).toLowerCase()), true);
 assert.equal(g.scores[0], 5); assert.equal(g.solved.A, 0); assert.deepEqual(g.opened.A, [1, 1, 1, 1]);
 assert.equal(g.turn, 0, 'pogodak: isti igrač pogađa dalje'); assert.equal(g.stage, 'guess');
-assert.throws(() => G.guess(g, 'A', 'plaza'), /već riješena/);
+assert.throws(() => G.guess(g, 'A', L(P0.A[0])), /već riješena/);
 assert.throws(() => G.open(g, 'A', 1));
-assert.equal(G.guess(g, 'B', 'avion'), false);
+assert.equal(G.guess(g, 'B', 'sigurno netacno xyz'), false);
 assert.equal(g.turn, 1, 'promašaj: sljedeći'); assert.equal(g.stage, 'open');
 G.open(g, 'B', 0); G.pass(g); assert.equal(g.turn, 2);
 G.open(g, 'C', 0);
 // konačno: 7 + B(2+3) + C(2+3) + D(2+4) = 7+5+5+6 = 23
 assert.equal(G.finalPts(g), 23);
-assert.equal(G.guess(g, 'F', 'more'), true);
+assert.equal(G.guess(g, 'F', L(P0.F)), true);
 assert.equal(g.scores[2], 23); assert.equal(g.phase, 'roundOver');
 assert.ok(['A', 'B', 'C', 'D'].every(c => g.solved[c] >= 0));
 assert.equal(g.solved.A, 0, 'kolona koju je neko već riješio ostaje njegova');
@@ -77,12 +83,12 @@ assert.throws(() => G.open(g, 'D', 0), /nije u toku/);
 G.nextRound(g);
 assert.equal(g.round, 1); assert.equal(g.turn, 1, 'druga runda: počinje sljedeći igrač'); assert.equal(g.phase, 'play');
 let v = G.publicView(g);
-assert.ok(!JSON.stringify(v).includes('ŠKOLA'), 'konačno rješenje se ne šalje');
-assert.ok(!JSON.stringify(v).toLowerCase().includes('kreda'), 'neotvorena polja se ne šalju');
+assert.ok(!JSON.stringify(v).includes(L(P1.F)), 'konačno rješenje se ne šalje');
+assert.ok(!JSON.stringify(v).includes(JSON.stringify(P1.A[1])), 'neotvorena polja se ne šalju');
 G.open(g, 'A', 0);
 v = G.publicView(g);
-assert.equal(v.fields.A[0], 'kreda'); assert.equal(v.fields.A[1], null); assert.equal(v.sols.A, null);
-assert.ok(!JSON.stringify(v).includes('TABLA'));
+assert.equal(v.fields.A[0], P1.A[1]); assert.equal(v.fields.A[1], null); assert.equal(v.sols.A, null);
+assert.ok(!JSON.stringify(v).includes(L(P1.A[0])));
 // otkrivanje: tek kad su sva polja otvorena
 assert.throws(() => G.reveal(g), /neotvorenih/);
 G.pass(g);
@@ -90,12 +96,12 @@ for (const c of G.COLS) for (let i = 0; i < 4; i++) if (!g.opened[c][i]) { G.ope
 assert.equal(g.stage, 'guess', 'sve otvoreno: odmah se pogađa');
 assert.equal(G.finalPts(g), 7 + 4 * 2);
 G.reveal(g);
-assert.equal(g.phase, 'roundOver'); assert.equal(g.solved.F, -2); assert.equal(g.last.answer, 'ŠKOLA');
+assert.equal(g.phase, 'roundOver'); assert.equal(g.solved.F, -2); assert.equal(g.last.answer, L(P1.F));
 G.nextRound(g); assert.equal(g.turn, 2);
 G.timeout(g); assert.equal(g.stage, 'guess', 'istek vremena: otvori se nasumično polje');
 G.timeout(g); assert.equal(g.turn, 0, 'istek vremena u pogađanju: dalje');
 // kraj
-G.open(g, 'D', g.opened.D.indexOf(0)); G.guess(g, 'F', 'zima');
+G.open(g, 'D', g.opened.D.indexOf(0)); G.guess(g, 'F', L(P2.F));
 G.nextRound(g); assert.equal(g.phase, 'over');
 assert.throws(() => G.nextRound(g));
 assert.throws(() => G.newGame(seats(1)), /najmanje 2/);

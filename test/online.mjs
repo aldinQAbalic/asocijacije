@@ -23,14 +23,15 @@ r = await fetch(`${BASE}/ws/ZZZZZ`); assert.equal(r.status, 426);
 r = await fetch(`${BASE}/manifest.webmanifest`); assert.equal(r.status, 200);
 r = await fetch(`${BASE}/icon-192.png`); assert.equal(r.headers.get('content-type'), 'image/png');
 const open0 = await (await fetch(`${BASE}/api/open`)).json();
-assert.ok(open0.themes.length >= 5 && open0.themes.every(t => t.id && t.label && t.count >= 5), 'lista tema stiže uz sobe');
+assert.ok(open0.themes.length >= 2 && open0.themes.every(t => t.id && t.label && t.count >= 5), 'lista tema stiže uz sobe');
 // soba s temama izabranim na početnoj
-const { code: c2 } = await (await fetch(`${BASE}/api/rooms`, { method: 'POST', body: JSON.stringify({ themes: ['sport', 'xxx'] }) })).json();
+const [th1, th2] = open0.themes.map(t => t.id);
+const { code: c2 } = await (await fetch(`${BASE}/api/rooms`, { method: 'POST', body: JSON.stringify({ themes: [th1, 'xxx'] }) })).json();
 const T = client(c2, 'tttttttttttttttttttt9', 'Tema');
 await T.ready; await T.until(s => s.you.host);
-assert.deepEqual(T.state.options.themes, ['sport']); assert.equal(T.state.maxRounds, open0.themes.find(t => t.id === 'sport').count);
+assert.deepEqual(T.state.options.themes, [th1]); assert.equal(T.state.maxRounds, open0.themes.find(t => t.id === th1).count);
 T.send({ t: 'opt', rounds: T.state.maxRounds + 1 }); await sleep(200); assert.equal(T.state.options.rounds, 4, 'runde ne mogu preko broja asocijacija u temi');
-assert.ok(!JSON.stringify(T.state).includes('KOŠARKA'), 'asocijacije se ne šalju unaprijed');
+assert.ok(PUZZLES.filter(p => p.T === th1).every(p => !JSON.stringify(T.state).includes(p.F.split('|')[0])), 'asocijacije se ne šalju unaprijed');
 T.ws.close();
 r = await fetch(`${BASE}/api/rooms`, { method: 'POST', body: 'nije json' }); assert.equal(r.status, 201, 'loš body: soba sa svim temama');
 const { code } = await (await fetch(`${BASE}/api/rooms`, { method: 'POST' })).json();
@@ -52,7 +53,7 @@ const listed = async () => (await (await fetch(`${BASE}/api/open`)).json()).room
 let e = await listed(); assert.ok(e, 'javna soba je na listi'); assert.equal(e.host, 'Aldin'); assert.equal(e.free, 4);
 assert.deepEqual(Object.keys(e).sort(), ['code', 'free', 'host', 'over', 'players', 'rounds', 'themes'], 'lista ne šalje višak podataka');
 // teme se biraju samo pri pravljenju sobe: u sobi se ne mogu promijeniti
-A.send({ t: 'opt', themes: ['bih'] }); await sleep(200); assert.deepEqual(A.state.options.themes, [], 'teme se ne mijenjaju u sobi');
+A.send({ t: 'opt', themes: [th2] }); await sleep(200); assert.deepEqual(A.state.options.themes, [], 'teme se ne mijenjaju u sobi');
 A.send({ t: 'opt', public: false }); await A.until(s => !s.options.public); await sleep(100);
 assert.equal(await listed(), undefined, 'privatna soba nije na listi');
 A.send({ t: 'opt', public: true, rounds: 3, nesto: 1 }); await A.until(s => s.options.public && s.options.rounds === 3); await sleep(100);

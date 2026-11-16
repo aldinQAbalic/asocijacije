@@ -10,7 +10,8 @@ Radi na Cloudflare Workers + Durable Objects (isti nalog kao Termin i Čovječe 
 - `src/room.js`: jedna soba = jedan Durable Object (igrači, botovi, tajmer, stanje)
 - `src/lobby.js`: lista otvorenih soba (jedan Durable Object za cijelu aplikaciju)
 - `src/game.js`: pravila igre (samo logika, server je sudija)
-- `src/puzzles.js`: teme i asocijacije (ovdje dodaješ nove)
+- `src/puzzles.js`: teme i asocijacije koje su u igri (ovdje dodaješ nove)
+- `src/puzzles-ostalo.js`: arhiva nefudbalskih asocijacija (more, škola, zima…), trenutno se ne koristi
 - `src/sw.txt`: service worker za aplikaciju na mobitelu
 - zvukovi se prave u browseru (Web Audio), nema zvučnih fajlova
 - `src/assets/`: ikone aplikacije
@@ -48,17 +49,18 @@ U drugom terminalu: `node test/online.mjs` odigra partiju od 3 runde preko mrež
 
 Teme se biraju samo na početnoj stranici, prije „Napravi novu sobu“ (može više njih, ili „Sve teme“). U sobi se samo prikazuju i ne mogu se mijenjati.
 Izbor se pamti u browseru. Broj rundi je ograničen brojem asocijacija u izabranim temama.
-Trenutno: 🏠 Svakodnevica (7), 🌿 Priroda (6), ⚽ Sport (5), 🌉 Naše (5), 🎭 Kultura (5).
+Za sada je igra samo fudbalska: 📏 Pojmovi i pravila (5), 🏟️ Klubovi (6), 🌍 Reprezentacije i prvenstva (5), ⭐ Igrači i treneri (5).
+Stare teme (Svakodnevica, Priroda, Sport, Naše, Kultura) su u `src/puzzles-ostalo.js`; da ih vratiš, prekopiraj teme u `THEMES` i asocijacije u `PUZZLES`.
 
 Nova tema: dodaj je u `THEMES` na vrhu `src/puzzles.js` (`id: 'naziv'`) i napiši bar 5 asocijacija s tim `T`.
-`npm test` provjerava da svaka tema ima bar 5.
+`npm test` provjerava da svaka tema ima bar 5 i da nijedno polje samo po sebi ne odaje rješenje.
 
 ## Nove asocijacije
 
 U `src/puzzles.js` dodaj novi blok:
 
 ```js
-{ T: 'sport', F: 'KONAČNO|druga varijanta',
+{ T: 'klubovi', F: 'KONAČNO|druga varijanta',
   A: ['RJEŠENJE A|varijanta', 'polje1', 'polje2', 'polje3', 'polje4'],
   B: [...], C: [...], D: [...] },
 ```
