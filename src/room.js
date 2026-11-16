@@ -1,6 +1,7 @@
 // Jedna soba = jedan Durable Object. Drži stanje igre i sve WebSocket veze igrača u toj sobi.
 import { DurableObject } from 'cloudflare:workers';
 import * as G from './game.js';
+import { findImage } from './images.js';
 
 const OPEN_MS = 25_000;          // koliko čovjek ima da otvori polje
 const GUESS_MS = 45_000;         // koliko ima da pogađa
@@ -282,6 +283,24 @@ export class Room extends DurableObject {
     await this.schedule();
     this.broadcast(closing);
     await this.report(closing);
+    await this.loadImage();
+  }
+
+  // Kad se otkrije konačno rješenje: potraži sliku pojma (jednom po rundi) i pošalji je svima.
+  // Stanje je već poslano, pa igra ne čeka na sliku; ako je nema, svi vide emoji.
+  async loadImage() {
+    const g = this.data && this.data.game;
+    if (!g || g.phase !== 'roundOver' || g.imageTried) return;
+    g.imageTried = true;
+    const round = g.round, seq = g.seq;
+    await this.ctx.storage.put('room', this.data);
+    const img = await findImage(G.imageQuery(g));
+    const now = this.data && this.data.game;
+    // u međuvremenu je mogla početi nova runda ili partija
+    if (!img || now !== g || now.round !== round || now.phase !== 'roundOver' || now.seq !== seq) return;
+    now.image = img;
+    await this.ctx.storage.put('room', this.data);
+    this.broadcast();
   }
 
   // Javlja listi otvorenih soba (Lobby) samo kad se nešto promijeni.

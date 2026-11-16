@@ -1,6 +1,7 @@
 import * as G from '../src/game.js';
 import { PUZZLES, THEMES, LEVELS } from '../src/puzzles.js';
 import assert from 'node:assert';
+import { pickImage, findImage, searchUrl } from '../src/images.js';
 
 // ---------- asocijacije su ispravno upisane ----------
 PUZZLES.forEach((p, n) => {
@@ -150,3 +151,30 @@ for (let n = 0; n < 3000; n++) {
   assert.ok(gg.scores.reduce((a, b) => a + b, 0) <= gg.rounds * 31);
 }
 console.log(`3000 partija OK · rundi: ${rounds} · konačno pogođeno: ${finals} · otkriveno: ${reveals} · najviše poteza u partiji: ${maxActions}`);
+
+// ---------- slike (Wikimedia Commons), sa lažnim odgovorima ----------
+for (const p of PUZZLES) assert.ok(p.W && p.E, `asocijacija ${G.label(p.F)}: fali W (pretraga slike) ili E (emoji)`);
+const img = (title, extra = {}) => ({ title, index: 1, imageinfo: [{ thumburl: 'https://upload.wikimedia.org/x/640px-a.jpg', descriptionurl: 'https://commons.wikimedia.org/wiki/File:a.jpg', mime: 'image/jpeg', width: 2000, height: 1500, extmetadata: { Artist: { value: '<a href="x">Ivo <b>Ivić</b></a>' }, LicenseShortName: { value: 'CC BY-SA 4.0' } }, ...extra }] });
+const resp = { query: { pages: [img('File:Club logo.png'), img('File:Messi signature.jpg'), img('File:Small.jpg', { width: 100 }), img('File:Video.webm', { mime: 'video/webm' }), img('File:Messi 2018.jpg')] } };
+const chosen = pickImage(resp);
+assert.deepEqual(chosen, { url: 'https://upload.wikimedia.org/x/640px-a.jpg', page: 'https://commons.wikimedia.org/wiki/File:a.jpg', author: 'Ivo Ivić', license: 'CC BY-SA 4.0' }, 'izbaci logo, potpis, male slike i video; očisti HTML autora');
+assert.equal(pickImage({ query: { pages: [img('File:Logo.png')] } }), null, 'samo logo: nema slike');
+assert.equal(pickImage({}), null);
+assert.equal(pickImage({ query: { pages: [img('File:x.jpg', { thumburl: 'https://zlo.example/x.jpg' })] } }), null, 'samo slike sa upload.wikimedia.org');
+assert.equal(pickImage({ query: { pages: { 5: img('File:Stari format.jpg') } } }).license, 'CC BY-SA 4.0', 'radi i stari format odgovora');
+assert.ok(searchUrl('Lionel Messi').startsWith('https://commons.wikimedia.org/w/api.php?') && searchUrl('Lionel Messi').includes('Lionel+Messi+filetype%3Abitmap'));
+let seenUA = null;
+assert.ok(await findImage('Lionel Messi', async (u, o) => { seenUA = o.headers['User-Agent']; return { ok: true, json: async () => resp }; }));
+assert.ok(seenUA && seenUA.includes('Asocijacije'), 'šalje User-Agent');
+assert.equal(await findImage('x', async () => { throw new Error('mreža'); }), null, 'greška mreže: null, bez rušenja');
+assert.equal(await findImage('x', async () => ({ ok: false })), null);
+assert.equal(await findImage(null, async () => { throw new Error('ne smije zvati'); }), null);
+// u igri: slika i emoji se ne šalju dok runda traje
+{
+  const gg = G.newGame([{}, {}, null, null], { rounds: 1 });
+  assert.equal(G.publicView(gg).emoji, null); assert.equal(G.publicView(gg).image, null);
+  G.open(gg, 'A', 0); G.guess(gg, 'F', G.label(PUZZLES[gg.order[0]].F));
+  assert.equal(G.publicView(gg).emoji, PUZZLES[gg.order[0]].E); assert.equal(G.imageQuery(gg), PUZZLES[gg.order[0]].W);
+}
+console.log('slike OK');
+

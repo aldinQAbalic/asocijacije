@@ -123,7 +123,12 @@ while (true) {
   const s = A.state;
   if (s.game.phase === 'over') break;
   if (Date.now() - t0 > 240000) throw new Error('predugo');
-  if (s.game.phase === 'roundOver' && !A.sentNext) { sawRoundOver++; A.sentNext = s.game.round; A.send({ t: 'next' }); }
+  if (s.game.phase === 'roundOver' && !A.sentNext) {
+    sawRoundOver++; A.sentNext = s.game.round;
+    assert.ok(s.game.emoji, 'kraj runde: emoji (ili slika) za pojam');
+    A.send({ t: 'next' });
+  }
+  if (s.game.phase === 'play') assert.equal(s.game.emoji, null, 'dok runda traje nema slike');
   if (s.game.phase === 'play') A.sentNext = false;
   for (const [c, seat] of [[A, 0], [B2, 2]]) {
     const g = c.state.game;

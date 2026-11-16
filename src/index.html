@@ -137,6 +137,12 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 #guessInp{flex:1;min-width:0}
 #roundBox{text-align:center}
 .big{font-size:28px;font-weight:800;color:var(--gold);margin:4px 0;text-transform:uppercase}
+.pic{margin:8px auto 10px;max-width:420px}
+.pic img{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:12px;background:#0a1633;animation:fadein .5s}
+.pic figcaption{font-size:11px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pic a{color:var(--muted)}
+.emo{font-size:56px;margin:6px 0 8px;animation:fadein .5s}
+@keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 .standing{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #ffffff12;font-weight:600}
 .log{font-size:13px;color:var(--muted);line-height:1.75;margin-top:12px}
 .log div:first-child{color:var(--ink)}
@@ -265,10 +271,11 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
         <button class="btn" id="btnPass">Dalje</button>
       </div>
     </div>
+    <!-- kraj runde: rješenje i slika pojma, iznad table da se odmah vidi -->
+    <div class="panel hidden" id="roundBox"></div>
     <div class="board" id="board"></div>
     <div class="status" id="status"></div>
     <div style="text-align:center"><button class="btn ghost sm hidden" id="btnReveal">Niko ne zna — otkrij rješenje</button></div>
-    <div class="panel hidden" id="roundBox"></div>
     <div class="reactbar">
       <button class="btn sm" id="reactBtn">😀 Reakcija</button>
       <span class="hint" id="watching" style="margin:0"></span>
@@ -586,7 +593,8 @@ function renderGame(m) {
   // pogađanje
   // cilj se bira klikom na A ?, B ?, C ?, D ? ili KONAČNO ? na tabli
   $('guess').classList.toggle('hidden', !canGuess);
-  $('turnMsg').classList.toggle('hidden', canGuess);
+  $('turnMsg').classList.toggle('hidden', canGuess || g.phase === 'roundOver');
+  $('topSlot').classList.toggle('hidden', g.phase === 'roundOver');
   $('guessInp').placeholder = !target ? 'Klikni A ?, B ?… ili KONAČNO ?' : target === 'F' ? 'Konačno rješenje…' : `Rješenje za kolonu ${target}…`;
   $('btnReveal').classList.toggle('hidden', !(canGuess && g.allOpen));
 
@@ -594,15 +602,33 @@ function renderGame(m) {
   const rb = $('roundBox');
   if (g.phase === 'roundOver') {
     const w = g.solved.F;
-    rb.innerHTML = `<div class="hint" style="margin:0">Konačno rješenje</div><div class="big">${esc(g.sols.F || '')}</div>
-      <div>${w >= 0 ? `Pogodio/la: <b style="color:${COLORS[w]}">${esc(seatName(m, w))}</b>` : 'Niko nije pogodio'}</div>
-      <div class="hint" id="nextIn"></div>
-      ${m.you.host ? `<button class="btn primary" data-next="1" style="margin-top:10px">${g.round + 1 >= g.rounds ? 'Konačni rezultat' : 'Sljedeća runda →'}</button>` : ''}`;
+    // ponovo crta samo kad se nešto promijeni (da slika ne treperi)
+    const key = [g.round, g.seq, w, m.you.host, g.image && g.image.url].join('|');
+    if (rb.dataset.key !== key) {
+      rb.dataset.key = key;
+      rb.innerHTML = `<div class="hint" style="margin:0">Konačno rješenje</div><div class="big">${esc(g.sols.F || '')}</div>
+        ${pictureHtml(g)}
+        <div>${w >= 0 ? `Pogodio/la: <b style="color:${COLORS[w]}">${esc(seatName(m, w))}</b>` : 'Niko nije pogodio'}</div>
+        <div class="hint" id="nextIn"></div>
+        ${m.you.host ? `<button class="btn primary" data-next="1" style="margin-top:10px">${g.round + 1 >= g.rounds ? 'Konačni rezultat' : 'Sljedeća runda →'}</button>` : ''}`;
+      const img = rb.querySelector('.pic img');
+      // slika se nije učitala: pokaži emoji
+      if (img) img.addEventListener('error', () => { const f = rb.querySelector('.pic'); if (f) f.outerHTML = `<div class="emo">${esc(g.emoji || '⚽')}</div>`; });
+    }
     rb.classList.remove('hidden');
-  } else rb.classList.add('hidden');
+  } else { rb.classList.add('hidden'); rb.dataset.key = ''; }
 
   $('watching').textContent = m.watching ? `👀 gleda: ${m.watching}` : '';
   $('log').innerHTML = (g.log || []).map(l => `<div>${l.seat >= 0 && l.type !== 'over' ? `<span class="dot" style="background:${COLORS[l.seat]}"></span>` : ''}${esc(logText(m, l))}</div>`).join('');
+}
+
+// Slika pojma sa Wikimedia Commons (ili emoji dok je nema / ako je nema)
+function pictureHtml(g) {
+  const im = g.image;
+  if (!im) return `<div class="emo">${esc(g.emoji || '⚽')}</div>`;
+  const credit = [im.author, im.license].filter(Boolean).map(esc).join(' · ');
+  return `<figure class="pic"><img src="${esc(im.url)}" alt="${esc(g.sols.F || '')}" referrerpolicy="no-referrer" loading="eager">
+    <figcaption>${credit ? 'Foto: ' + credit + ' · ' : ''}${im.page ? `<a href="${esc(im.page)}" target="_blank" rel="noopener">Wikimedia Commons</a>` : 'Wikimedia Commons'}</figcaption></figure>`;
 }
 
 function logText(m, l) {

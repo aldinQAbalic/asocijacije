@@ -11,6 +11,7 @@ Radi na Cloudflare Workers + Durable Objects (isti nalog kao Termin i Čovječe 
 - `src/lobby.js`: lista otvorenih soba (jedan Durable Object za cijelu aplikaciju)
 - `src/game.js`: pravila igre (samo logika, server je sudija)
 - `src/puzzles.js`: teme i asocijacije koje su u igri (ovdje dodaješ nove)
+- `src/images.js`: slika pogođenog pojma sa Wikimedia Commons
 - `src/puzzles-ostalo.js`: arhiva asocijacija koje nisu u igri (more, škola, zima…, fudbalski pojmovi), trenutno se ne koristi
 - `src/sw.txt`: service worker za aplikaciju na mobitelu
 - zvukovi se prave u browseru (Web Audio), nema zvučnih fajlova
@@ -49,7 +50,7 @@ U drugom terminalu: `node test/online.mjs` odigra partiju od 4 runde preko mrež
 
 Teme se biraju samo na početnoj stranici, prije „Napravi novu sobu“ (može više njih, ili „Sve teme“). U sobi se samo prikazuju i ne mogu se mijenjati.
 Izbor se pamti u browseru.
-Za sada postoji samo tema ⚽ Fudbal (46 asocijacija). Kad je tema samo jedna, na početnoj se prikazuje samo ona.
+Za sada postoji samo tema ⚽ Fudbal (76 asocijacija). Kad je tema samo jedna, na početnoj se prikazuje samo ona.
 Stare teme (Svakodnevica, Priroda, Sport, Naše, Kultura, Pojmovi i pravila) su u `src/puzzles-ostalo.js`; da ih vratiš, prekopiraj teme u `THEMES` i asocijacije u `PUZZLES`.
 
 Nova tema: dodaj je u `THEMES` na vrhu `src/puzzles.js` (`id: 'naziv'`) i napiši bar 5 asocijacija s tim `T`.
@@ -58,14 +59,22 @@ Nova tema: dodaj je u `THEMES` na vrhu `src/puzzles.js` (`id: 'naziv'`) i napiš
 ## Težine
 
 Asocijacije imaju oznaku težine (`L: 'srednje'`; bez `L` = lako), ali se težina za sada ne bira:
-igra nasumično uzima iz svih asocijacija (26 lakih + 20 srednjih). Oznake su tu ako se izbor kasnije vrati.
+igra nasumično uzima iz svih asocijacija (39 lakih + 37 srednjih). Oznake su tu ako se izbor kasnije vrati.
+
+## Slika pojma
+
+Kad se otkrije konačno rješenje, soba na Wikimedia Commons potraži slobodne fotografije za pojam (polje `W` u asocijaciji,
+npr. `W: 'Lionel Messi'`), izabere nasumičnu i pošalje svima isti link. Ništa se ne čuva u projektu.
+Ispod slike piše autor, licenca i link na Commons. Grbovi, zastave, potpisi i slične slike se preskaču;
+za klubove `W` je njihov stadion. Ako Commons ne odgovori za 4 s ili nema dobre slike, prikaže se emoji iz polja `E`.
+Lokalno (`wrangler dev`) slike rade samo ako računar ima pristup internetu.
 
 ## Nove asocijacije
 
 U `src/puzzles.js` dodaj novi blok:
 
 ```js
-{ T: 'fudbal', L: 'srednje', F: 'KONAČNO|druga varijanta',
+{ T: 'fudbal', L: 'srednje', F: 'KONAČNO|druga varijanta', W: 'Engleski naziv za sliku', E: '⚽',
   A: ['RJEŠENJE A|varijanta', 'polje1', 'polje2', 'polje3', 'polje4'],
   B: [...], C: [...], D: [...] },
 ```
