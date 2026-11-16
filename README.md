@@ -48,7 +48,7 @@ U drugom terminalu: `node test/online.mjs` odigra partiju od 3 runde preko mrež
 
 Teme se biraju na početnoj stranici prije „Napravi novu sobu“ (može više njih, ili „Sve teme“), a domaćin ih može promijeniti i u sobi.
 Izbor se pamti u browseru. Broj rundi je ograničen brojem asocijacija u izabranim temama.
-Trenutno: 🏠 Svakodnevica (7), 🌿 Priroda (6), ⚽ Sport (5), 🇧🇦 Naše (5), 🎭 Kultura (5).
+Trenutno: 🏠 Svakodnevica (7), 🌿 Priroda (6), ⚽ Sport (5), 🌉 Naše (5), 🎭 Kultura (5).
 
 Nova tema: dodaj je u `THEMES` na vrhu `src/puzzles.js` (`id: 'naziv'`) i napiši bar 5 asocijacija s tim `T`.
 `npm test` provjerava da svaka tema ima bar 5.

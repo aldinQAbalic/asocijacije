@@ -78,11 +78,12 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 .panel{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
 .panel h3{margin:0 0 10px;font-size:15px;color:var(--gold)}
 .seats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.seat{background:var(--bg3);border:2px solid #ffffff12;border-radius:12px;padding:10px;display:flex;align-items:center;gap:8px;min-height:58px}
+.seat{background:var(--bg3);border:2px solid #ffffff12;border-radius:12px;padding:10px;display:flex;align-items:center;gap:8px;min-height:58px;min-width:0}
 .seat .who{flex:1;min-width:0}
 .seat .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seat .lbl{font-size:12px;color:var(--muted)}
-.seat .acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.seat .acts{display:flex;gap:6px;flex:none;justify-content:flex-end}
+.seat .acts .btn{white-space:nowrap}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;flex:none}
 .off{opacity:.5}
 .opts{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px;font-size:14px;color:var(--muted)}
@@ -161,6 +162,8 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 .banner{position:fixed;top:0;left:0;right:0;background:#b4232f;color:#fff;text-align:center;padding:8px;font-size:14px;z-index:40}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000d;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;transition:opacity .3s;z-index:50;max-width:90vw;text-align:center}
 @media (max-width:560px){
+  .seats{grid-template-columns:1fr}
+  .seat{min-height:52px;padding:8px 10px}
   .players{grid-template-columns:repeat(2,1fr)}
   .fld{font-size:12px;padding:9px 3px;min-height:38px}
   .sol{font-size:13px}
@@ -479,7 +482,7 @@ function renderLobby(m) {
         <div class="who ${s.online ? '' : 'off'}"><div class="nm">${esc(s.name)}${mine ? ' (ti)' : ''}</div><div class="lbl">${tag}</div></div>
         <div class="acts">${mine ? `<button class="btn ghost sm" data-stand="1">Ustani</button>` : host ? `<button class="btn ghost sm" data-clear="${n}">Ukloni</button>` : ''}</div></div>`;
     }
-    return `<div class="seat"><span class="dot" style="background:${COLORS[n]}55"></span><div class="who"><div class="nm" style="color:var(--muted)">slobodno</div><div class="lbl">Mjesto ${n + 1}</div></div>
+    return `<div class="seat"><span class="dot" style="background:${COLORS[n]}55"></span><div class="who"><div class="nm" style="color:var(--muted)">Slobodno</div><div class="lbl">Mjesto ${n + 1}</div></div>
       <div class="acts">${me === -1 ? `<button class="btn primary sm" data-sit="${n}">Sjedni</button>` : ''}${host ? `<button class="btn sm" data-bot="${n}">+ Bot</button>` : ''}</div></div>`;
   }).join('');
   const o = m.options;

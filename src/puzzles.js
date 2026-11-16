@@ -3,7 +3,7 @@ export const THEMES = {
   svakodnevica: '🏠 Svakodnevica',
   priroda: '🌿 Priroda',
   sport: '⚽ Sport',
-  bih: '🇧🇦 Naše',
+  bih: '🌉 Naše',   // zastava 🇧🇦 se na Windowsu prikaže kao slova "BA"
   kultura: '🎭 Kultura',
 };
 
