@@ -27,7 +27,16 @@ class_name = "Room"
 name = "LOBBY"
 class_name = "Lobby"
 
+# Tabela pobjeda (jedna za cijelu aplikaciju)
+[[durable_objects.bindings]]
+name = "STATS"
+class_name = "Stats"
+
 # Migracije se nikad ne brišu ni mijenjaju, samo se dodaju nove.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room", "Lobby"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Stats"]

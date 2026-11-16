@@ -8,6 +8,7 @@ import swCode from './sw.txt';
 import { THEMES, LEVELS, PUZZLES } from './puzzles.js';
 export { Room } from './room.js';
 export { Lobby } from './lobby.js';
+export { Stats } from './stats.js';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // bez 0/O i 1/I zabune
 const CODE_RE = /^[A-HJ-NP-Z2-9]{5}$/;
@@ -77,6 +78,12 @@ export default {
       const r = await env.LOBBY.get(env.LOBBY.idFromName('main')).fetch('https://lobby/list');
       // uz listu soba ide i lista tema (za izbor na početnoj stranici)
       return json({ ...(await r.json()), themes: THEME_LIST, levels: LEVEL_LIST });
+    }
+
+    if (path === '/api/top' && request.method === 'GET') {
+      const name = (url.searchParams.get('name') || '').slice(0, 40);
+      const r = await env.STATS.get(env.STATS.idFromName('main')).fetch('https://stats/top?name=' + encodeURIComponent(name));
+      return json(await r.json());
     }
 
     const info = path.match(/^\/api\/rooms\/([^/]+)$/);

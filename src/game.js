@@ -69,7 +69,7 @@ export function newGame(seats, opts = {}) {
   if (!pool.length) throw new Error('Nema asocijacija za izabranu temu i težinu');
   const rounds = Math.max(1, Math.min(pool.length, Math.floor(opts.rounds) || 4));
   const order = Array.isArray(opts.order) ? opts.order.slice(0, rounds) : shuffle(pool, opts.rnd).slice(0, rounds);
-  const g = { phase: 'play', players, rounds, round: 0, order, scores: [0, 0, 0, 0], seq: 0, last: null, log: [] };
+  const g = { phase: 'play', players, rounds, round: 0, order, scores: [0, 0, 0, 0], finals: [0, 0, 0, 0], seq: 0, last: null, log: [] };
   startRound(g);
   return g;
 }
@@ -131,6 +131,7 @@ export function guess(g, target, text) {
       g.scores[seat] += pts;
       for (const c of COLS) { if (g.solved[c] === -1) g.solved[c] = seat; g.opened[c] = [1, 1, 1, 1]; }
       g.solved.F = seat;
+      if (g.finals) g.finals[seat] += 1;   // za tabelu: koliko je ko pogodio konačnih
       g.phase = 'roundOver'; g.stage = null;
       bump(g, { type: 'guess', seat, target, text, ok: true, pts, answer: label(P.F) });
       return true;

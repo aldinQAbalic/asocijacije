@@ -152,6 +152,19 @@ assert.equal(g.round, 3); assert.ok(sawRoundOver >= 3); assert.ok(actions > 0, '
 const unexpected = [...A.errors, ...B2.errors].filter(x => !['Nisi na potezu', 'Runda nije u toku', 'Runda još traje', 'Samo domaćin pokreće sljedeću rundu'].includes(x));
 assert.deepEqual(unexpected, [], 'neočekivane greške: ' + unexpected);
 
+// Tabela pobjeda: oba čovjeka su upisana (bot nije), ime se ne razlikuje po velikim slovima
+await sleep(500);
+const top = await (await fetch(`${BASE}/api/top?name=ALDIN`)).json();
+assert.ok(top.month && top.month.label && top.month.in && top.all, 'tabela ima mjesec i sve vrijeme');
+const findIn = (t, n) => [...t.rows, ...(t.me ? [t.me] : [])].find(r => r.name.toLowerCase() === n);
+const meRow = findIn(top.all, 'aldin');
+assert.ok(meRow && meRow.games >= 1 && meRow.me, 'Aldin upisan u tabelu i označen kao ja');
+assert.ok(findIn(top.all, 'brat'), 'drugi čovjek upisan');
+assert.ok(![...top.all.rows].some(r => /^bot /i.test(r.name)), 'botovi nisu u tabeli');
+assert.deepEqual(Object.keys(top.all.rows[0]).sort(), ['finals', 'games', 'me', 'name', 'points', 'rank', 'wins']);
+const gameWinner = A.state.game.scores[0] === Math.max(...A.state.game.players.map(s => A.state.game.scores[s]));
+console.log('tabela OK · Aldin:', meRow, '· pobijedio:', gameWinner);
+
 // U predvorju nakon partije: soba je ponovo na listi, nova partija radi
 await sleep(150); e = await listed(); assert.ok(e && e.over, 'između partija soba je na listi');
 A.send({ t: 'start' }); await A.until(s => s.game.phase === 'play' && s.game.round === 0 && s.game.seq === 1);

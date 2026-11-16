@@ -9,6 +9,7 @@ Radi na Cloudflare Workers + Durable Objects (isti nalog kao Termin i Čovječe 
 - `src/worker.js`: ulaz: stranica, pravljenje sobe, WebSocket
 - `src/room.js`: jedna soba = jedan Durable Object (igrači, botovi, tajmer, stanje)
 - `src/lobby.js`: lista otvorenih soba (jedan Durable Object za cijelu aplikaciju)
+- `src/stats.js`: tabela pobjeda (jedan Durable Object za cijelu aplikaciju)
 - `src/game.js`: pravila igre (samo logika, server je sudija)
 - `src/puzzles.js`: teme i asocijacije koje su u igri (ovdje dodaješ nove)
 - `src/images.js`: slika pogođenog pojma sa Wikimedia Commons
@@ -60,6 +61,17 @@ Nova tema: dodaj je u `THEMES` na vrhu `src/puzzles.js` (`id: 'naziv'`) i napiš
 
 Asocijacije imaju oznaku težine (`L: 'srednje'`; bez `L` = lako), ali se težina za sada ne bira:
 igra nasumično uzima iz svih asocijacija (39 lakih + 37 srednjih). Oznake su tu ako se izbor kasnije vrati.
+
+## Tabela pobjeda
+
+Na početnoj stranici je tabela sa dvije kartice: tekući mjesec (sama počinje ispočetka 1. u mjesecu, po našem vremenu)
+i sve vrijeme. Prikazuje top 10 (pobjede, partije); tvoje ime je označeno, a ako nisi u top 10 tvoj red se doda na dno.
+Klik na igrača pokaže ukupne bodove i broj pogođenih konačnih rješenja. Na kraju partije piše npr. „+1 pobjeda · sad si 2. u novembru“.
+
+- Igrači se prepoznaju po imenu (velika/mala slova, kvačice i razmaci se ne gledaju: „Aldin“ = „aldin“).
+- Partija se upisuje samo ako je odigrana do kraja i ako su na kraju u sobi bila bar 2 čovjeka.
+  Botovi se ne upisuju; napuštena partija koja se sama odvrti do kraja se ne broji.
+- Pobjeda = najviše bodova na kraju (neriješeno: svi s najviše bodova dobiju pobjedu). Ako pobijedi bot, niko od ljudi nema pobjedu.
 
 ## Slika pojma
 

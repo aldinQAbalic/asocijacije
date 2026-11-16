@@ -283,7 +283,24 @@ export class Room extends DurableObject {
     await this.schedule();
     this.broadcast(closing);
     await this.report(closing);
+    await this.recordStats();
     await this.loadImage();
+  }
+
+  // Kraj partije: upiši rezultat u tabelu pobjeda (jednom, i samo ako su do kraja igrala bar 2 čovjeka koji su još tu).
+  async recordStats() {
+    const d = this.data, g = d && d.game;
+    if (!g || g.phase !== 'over' || g.recorded) return;
+    g.recorded = true;
+    await this.ctx.storage.put('room', d);
+    // samo ljudi koji su na kraju još u sobi (napuštena partija koja se sama odvrti se ne broji)
+    const humans = g.players.filter(s => d.seats[s] && !d.seats[s].bot && this.online(d.seats[s].pid));
+    if (humans.length < 2 || !this.env.STATS) return;
+    const top = Math.max(...g.players.map(s => g.scores[s]));   // i bot može pobijediti; tada niko od ljudi nema pobjedu
+    const players = humans.map(s => ({ name: d.seats[s].name, points: g.scores[s], finals: (g.finals || [])[s] || 0, win: g.scores[s] === top }));
+    try {
+      await this.env.STATS.get(this.env.STATS.idFromName('main')).fetch('https://stats/record', { method: 'POST', body: JSON.stringify({ players }) });
+    } catch (e) { console.error('tabela', e); }
   }
 
   // Kad se otkrije konačno rješenje: potraži sliku pojma (jednom po rundi) i pošalji je svima.

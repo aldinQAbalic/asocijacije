@@ -146,6 +146,13 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
 .pic a{color:var(--muted)}
 .emo{font-size:56px;margin:6px 0 8px;animation:fadein .5s}
 @keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.trow{display:grid;grid-template-columns:30px minmax(0,1fr) 54px 54px;gap:4px;align-items:center;font-size:14px;padding:7px 6px;border-bottom:1px solid #ffffff12;cursor:pointer}
+.trow.hd{color:var(--muted);font-size:11px;cursor:default;padding-top:2px}
+.trow .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .n{text-align:right}
+.trow.me{background:#f2c14e22;border-radius:8px}
+.trow .det{grid-column:2/-1;font-size:12px;color:var(--muted)}
+.statline{margin-top:10px;background:#3ddc9722;border:1px solid #3ddc9755;border-radius:10px;padding:8px;font-size:14px;text-align:center}
 .standing{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #ffffff12;font-weight:600}
 .log{font-size:13px;color:var(--muted);line-height:1.75;margin-top:12px}
 .log div:first-child{color:var(--ink)}
@@ -220,6 +227,11 @@ header .code{font-weight:800;letter-spacing:.2em;background:#ffffff12;border-rad
     <div class="rooms">
       <h3><i title="uživo"></i><span>Otvorene sobe</span></h3>
       <div id="roomList"><div class="empty">Učitavam…</div></div>
+    </div>
+    <div class="rooms" id="topBox">
+      <h3><i style="background:none;box-shadow:none;width:auto;height:auto">🏆</i><span>Tabela pobjeda</span><small style="margin-left:auto;font-weight:400;font-size:11px">samo partije sa 2+ igrača</small></h3>
+      <div class="chips" id="topTabs" style="margin-bottom:6px"></div>
+      <div id="topRows"><div class="empty">Učitavam…</div></div>
     </div>
     <details class="rules">
       <summary>Pravila</summary>
@@ -438,6 +450,7 @@ function showHome(err) {
   $('homeErr').textContent = err || '';
   document.title = 'Asocijacije';
   loadRooms();
+  loadTop();
 }
 
 function connect() {
@@ -540,7 +553,12 @@ function renderLobby(m) {
     : me === -1 ? 'Izaberi slobodno mjesto.' : `Čekamo da ${m.hostName ? esc(m.hostName) : 'domaćin'} pokrene igru…`;
   // rezultati prošle partije
   const res = $('results');
-  if (m.game && m.game.phase === 'over') { res.innerHTML = standingsHtml(m); res.classList.remove('hidden'); }
+  if (m.game && m.game.phase === 'over') {
+    const k = m.code + ':' + m.game.seq;
+    if (res.dataset.key !== k) { res.dataset.key = k; res.innerHTML = standingsHtml(m) + '<div class="statline hidden" id="statLine"></div>'; }
+    res.classList.remove('hidden');
+    showMyStat(m);
+  }
   else res.classList.add('hidden');
 }
 
@@ -879,7 +897,7 @@ function joinFromInput() {
 }
 $('join').addEventListener('click', joinFromInput);
 $('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') joinFromInput(); });
-$('name').addEventListener('change', () => { store.set('aso-name', myName()); if (code) send({ t: 'name', name: myName() }); });
+$('name').addEventListener('change', () => { store.set('aso-name', myName()); if (code) send({ t: 'name', name: myName() }); else loadTop(); });
 window.addEventListener('popstate', () => { const c = routeCode(); if (c && c !== code) enterRoom(c); else if (!c && code) showHome(); });
 
 // ---------- otvorene sobe ----------
@@ -915,6 +933,66 @@ async function loadRooms() {
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !code) loadRooms(); });
 
+// ---------- tabela pobjeda ----------
+let TOP = null, topTab = 'month', topOpen = null, topTimer;
+async function loadTop() {
+  clearTimeout(topTimer);
+  if (code || document.visibilityState !== 'visible') return;
+  try {
+    const r = await fetch('/api/top?name=' + encodeURIComponent(myName()));
+    TOP = await r.json();
+    renderTop();
+  } catch { if (!TOP) $('topRows').innerHTML = '<div class="empty">Tabela trenutno nije dostupna</div>'; }
+  topTimer = setTimeout(loadTop, 20000);
+}
+function renderTop() {
+  if (!TOP) return;
+  const ml = TOP.month.label;
+  $('topTabs').innerHTML = `<button class="chip ${topTab === 'month' ? 'on' : ''}" data-ttab="month">${esc(ml.charAt(0).toUpperCase() + ml.slice(1))}</button>
+    <button class="chip ${topTab === 'all' ? 'on' : ''}" data-ttab="all">Sve vrijeme</button>`;
+  const t = TOP[topTab];
+  const row = r => `<div class="trow ${r.me ? 'me' : ''}" data-trow="${r.rank}">
+      <span>${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank + '.'}</span>
+      <span class="nm">${esc(r.name)}${r.me ? ' <small style="color:var(--muted)">(ti)</small>' : ''}</span>
+      <span class="n">${r.wins}</span><span class="n">${r.games}</span>
+      ${topOpen === topTab + r.rank ? `<span class="det">Bodovi ukupno: ${r.points} · Pogođena konačna: ${r.finals}</span>` : ''}</div>`;
+  if (!t.rows.length) { $('topRows').innerHTML = `<div class="empty">${topTab === 'month' ? 'Ovog mjeseca još niko nije odigrao partiju sa 2+ igrača.' : 'Još nema odigranih partija.'}</div>`; return; }
+  $('topRows').innerHTML = `<div class="trow hd"><span>#</span><span>Igrač</span><span class="n">Pobjede</span><span class="n">Partije</span></div>`
+    + t.rows.map(row).join('') + (t.me ? `<div class="empty" style="padding:2px">⋯</div>` + row(t.me) : '');
+}
+$('topBox').addEventListener('click', e => {
+  const tb = e.target.closest('[data-ttab]');
+  if (tb) { topTab = tb.dataset.ttab; topOpen = null; renderTop(); return; }
+  const tr = e.target.closest('[data-trow]');
+  if (tr) { const k = topTab + tr.dataset.trow; topOpen = topOpen === k ? null : k; renderTop(); }
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !code) loadTop(); });
+
+// Kraj partije: pokaži šta je upisano u tabelu (samo ako su igrala bar 2 čovjeka i ti si igrao)
+const statShown = {};
+async function showMyStat(m) {
+  const g = m.game, me = m.you.seat;
+  if (!g || g.phase !== 'over' || me === -1 || !g.players.includes(me)) return;
+  const humans = g.players.filter(s => m.seats[s] && !m.seats[s].bot).length;
+  if (humans < 2) { setStatLine('Partija protiv botova se ne upisuje u tabelu'); return; }
+  const key = m.code + ':' + g.seq;
+  if (statShown[key]) { setStatLine(statShown[key]); return; }
+  statShown[key] = '…';
+  await sleep(1200);   // da server stigne upisati rezultat
+  try {
+    const t = await (await fetch('/api/top?name=' + encodeURIComponent(seatName(m, me)))).json();
+    const top = Math.max(...g.players.map(s => g.scores[s]));
+    const won = g.scores[me] === top;
+    const where = t.month.myRank ? `sad si <b style="color:var(--gold)">${t.month.myRank}.</b> ${esc(t.month.in)} (${t.month.myWins} ${t.month.myWins === 1 ? 'pobjeda' : t.month.myWins < 5 && t.month.myWins > 1 ? 'pobjede' : 'pobjeda'})` : 'upisano u tabelu';
+    statShown[key] = (won ? '+1 pobjeda · ' : 'Upisano · ') + where;
+  } catch { statShown[key] = 'Upisano u tabelu'; }
+  setStatLine(statShown[key]);
+}
+function setStatLine(html) {
+  const el = $('statLine');
+  if (el && html && html !== '…') { el.innerHTML = html; el.classList.remove('hidden'); }
+}
+
 // ---------- instalacija (PWA) ----------
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 let installEvt = null;
@@ -941,7 +1019,7 @@ if (!standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) {
 // Otvoren link sobe: ako ime već postoji, ulazi direktno; inače prvo pita za ime.
 (function init() {
   const c = routeCode();
-  if (!c) { loadRooms(); return; }
+  if (!c) { loadRooms(); loadTop(); return; }
   $('codeIn').value = c;
   if (store.get('aso-name')) enterRoom(c);
   else { $('homeErr').textContent = 'Upiši ime i klikni Uđi'; $('name').focus(); loadRooms(); }

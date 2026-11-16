@@ -188,3 +188,20 @@ assert.ok(pickImage({ query: { pages: [img('File:Mapei Stadium 2019.jpg')] } }),
 }
 console.log('slike OK');
 
+// ---------- tabela pobjeda: pomoćne funkcije (sam Durable Object se testira u online.mjs) ----------
+{
+  const src = (await import('node:fs')).readFileSync(new URL('../src/stats.js', import.meta.url), 'utf8');
+  // stats.js uvozi cloudflare:workers, pa ovdje izvučemo samo čiste funkcije
+  const pure = src.replace(/^import .*$/m, '').replace(/export class Stats[\s\S]*$/, '');
+  const mod = await import('data:text/javascript,' + encodeURIComponent(pure));
+  assert.equal(mod.nameKey('  Aldin  '), 'aldin'); assert.equal(mod.nameKey('ALDIN'), mod.nameKey('aldin'));
+  assert.equal(mod.nameKey('Đžemo Čolić'), mod.nameKey('djzemo colic'));
+  assert.equal(mod.nameKey('<script>'), 'script');
+  assert.match(mod.monthId(new Date('2026-11-30T23:30:00Z')), /^2026-12$/, 'mjesec po sarajevskom vremenu (30.11. u 00:30 je već decembar)');
+  assert.equal(mod.monthLabel('2026-11'), 'novembar 2026'); assert.equal(mod.monthIn('2026-11'), 'u novembru');
+  const gg = G.newGame([{}, {}, null, null], { rounds: 1 });
+  G.open(gg, 'A', 0); G.guess(gg, 'F', G.label(PUZZLES[gg.order[0]].F));
+  assert.equal(gg.finals[gg.players[0]], 1, 'brojač pogođenih konačnih');
+  console.log('tabela (funkcije) OK');
+}
+
